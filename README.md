@@ -99,7 +99,7 @@ Install the Ceres version used by BIEVR-LIO with the provided script (builds
 Ceres 2.2.0 from source):
 
 ```bash
-./BIEVR-LIO/docker/scripts/install_ceres.sh
+sudo ./BIEVR-LIO/docker/scripts/install_ceres.sh
 ```
 
 (Optional) **Livox support.** The Livox `CustomMsg` branches are only compiled if
@@ -168,7 +168,7 @@ Install the Ceres version used by BIEVR-LIO with the provided script (builds
 Ceres 2.2.0 from source):
 
 ```bash
-./BIEVR-LIO/docker/scripts/install_ceres.sh
+sudo ./BIEVR-LIO/docker/scripts/install_ceres.sh
 ```
 
 (Optional) **Livox support.** The Livox `CustomMsg` branch is only compiled if
