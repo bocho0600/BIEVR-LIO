@@ -1,0 +1,24 @@
+topics:
+  pointcloud: "/gt_box/livox/lidar"
+  imu: "/gt_box/livox/imu_si_compliant"
+
+calibration: # T_IMU_LIDAR (LiDAR -> IMU)
+  translation: [-0.011, -0.02329, 0.04412]
+  rotation: [1, 0, 0,
+             0, 1, 0,
+             0, 0, 1]
+
+lidar:
+  min_range_m: 0.7 # Exclude points closer than this range [m]
+  max_range_m: 100 # Exclude points farther than this range [m]
+
+grid:
+  enabled: True # Build a 2.5D elevation grid map
+  length_m: 4.0 # Grid side length [m]
+  resolution_m: 0.04 # Grid cell size [m]
+
+base_calibration: # IMU -> base/body frame, only used when grid is enabled
+  translation: [-0.386, -0.003, 0.431]
+  rotation: [1,  0,  0,
+             0, -1,  0,
+             0,  0, -1]

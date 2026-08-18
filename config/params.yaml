@@ -20,6 +20,18 @@ imu:
     t_init: 0.2 # Time to initialize bias and gravity [s]
     frame: "imu"
 
+grid:
+  enabled: False # Publish a 2.5D elevation grid map around the robot. Requires the optional
+  # grid_map packages at build time and a `base_calibration` section (see below).
+  length_m: 4.0 # Grid side length [m]
+  resolution_m: 0.04 # Grid cell size [m]
+
+# base_calibration: # T_IMU_BASE (base/body -> IMU). Robot specific, so it belongs in the
+#   translation: [-0.386, -0.003, 0.431]   # sensor config. Only read when grid.enabled is True,
+#   rotation: [1,  0,  0,                  # in which case it is mandatory.
+#              0, -1,  0,
+#              0,  0, -1]
+
 debug:
   publish_all_clouds: False # Publish all clouds (fine, coarse, deskewed)
   timing: False

@@ -46,6 +46,18 @@ else()
   message(STATUS "bievr_lio_ros: livox_ros_driver2 NOT found, building without Livox (gen2) support.")
 endif()
 
+# grid_map is optional too: the 2.5D elevation map publishing is only built when
+# both grid_map packages are available.
+find_package(grid_map_core QUIET)
+find_package(grid_map_ros QUIET)
+if(grid_map_core_FOUND AND grid_map_ros_FOUND)
+  set(BIEVR_GRID_MAP_FOUND TRUE)
+  message(STATUS "bievr_lio_ros: grid_map found, enabling elevation map support.")
+else()
+  set(BIEVR_GRID_MAP_FOUND FALSE)
+  message(STATUS "bievr_lio_ros: grid_map NOT found, building without elevation map support.")
+endif()
+
 catkin_package(
   INCLUDE_DIRS include
   CATKIN_DEPENDS
@@ -92,6 +104,18 @@ foreach(target process_topics process_bag)
     target_compile_definitions(${target} PRIVATE BIEVR_WITH_LIVOX2)
     target_include_directories(${target} PRIVATE ${livox_ros_driver2_INCLUDE_DIRS})
     target_link_libraries(${target} ${livox_ros_driver2_LIBRARIES})
+  endif()
+  # Optional grid_map: elevation map publishing.
+  if(BIEVR_GRID_MAP_FOUND)
+    target_compile_definitions(${target} PRIVATE BIEVR_WITH_GRID_MAP)
+    target_include_directories(${target} PRIVATE
+      ${grid_map_core_INCLUDE_DIRS}
+      ${grid_map_ros_INCLUDE_DIRS}
+    )
+    target_link_libraries(${target}
+      ${grid_map_core_LIBRARIES}
+      ${grid_map_ros_LIBRARIES}
+    )
   endif()
 endforeach()
 

@@ -16,6 +16,12 @@
 // bievr_ros_common/conversions.h (which pulls in the ROS message headers).
 #include "bievr_ros_common/publisher_base.h"
 
+#ifdef BIEVR_WITH_GRID_MAP
+#include <grid_map_msgs/GridMap.h>
+
+#include <grid_map_ros/grid_map_ros.hpp>
+#endif  // BIEVR_WITH_GRID_MAP
+
 namespace bievr {
 
 // Type-erased wrapper around a ros::Publisher. The concrete message type is
@@ -55,6 +61,9 @@ struct RosBackend {
   using Odometry = nav_msgs::Odometry;
   using Vector3Stamped = geometry_msgs::Vector3Stamped;
   using TransformStamped = geometry_msgs::TransformStamped;
+#ifdef BIEVR_WITH_GRID_MAP
+  using GridMap = grid_map_msgs::GridMap;
+#endif  // BIEVR_WITH_GRID_MAP
 
   explicit RosBackend(Handle nh) : nh_(nh) {}
 
@@ -64,6 +73,14 @@ struct RosBackend {
   }
 
   void sendTransform(const TransformStamped& transform) { tf_.sendTransform(transform); }
+
+#ifdef BIEVR_WITH_GRID_MAP
+  GridMap toGridMapMsg(const grid_map::GridMap& map) const {
+    GridMap msg;
+    grid_map::GridMapRosConverter::toMessage(map, msg);
+    return msg;
+  }
+#endif  // BIEVR_WITH_GRID_MAP
 
   Handle nh_;
   tf::TransformBroadcaster tf_;

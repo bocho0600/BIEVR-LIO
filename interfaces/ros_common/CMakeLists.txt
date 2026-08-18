@@ -7,6 +7,9 @@ project(bievr_ros_common VERSION 0.0.0 LANGUAGES CXX)
 # free of any wrapper/interface code:
 #   - config_loader.h     : parses the shared YAML config into the core `Config`
 #   - conversions_impl.h  : templated ROS msg <-> LIO type conversions
+#   - grid_map_builder.h  : 2.5D elevation map construction (grid_map_core is
+#                           itself ROS-agnostic), compiled only when the consumer
+#                           defines BIEVR_WITH_GRID_MAP
 #
 # yaml-cpp (needed by config_loader.h) and the ROS message types (needed by
 # conversions_impl.h) are supplied by the consumer, exactly as before: this

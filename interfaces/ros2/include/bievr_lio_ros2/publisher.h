@@ -17,6 +17,11 @@
 // bievr_ros_common/conversions.h (which pulls in the ROS message headers).
 #include "bievr_ros_common/publisher_base.h"
 
+#ifdef BIEVR_WITH_GRID_MAP
+#include <grid_map_msgs/msg/grid_map.hpp>
+#include <grid_map_ros/grid_map_ros.hpp>
+#endif  // BIEVR_WITH_GRID_MAP
+
 namespace bievr {
 
 // Type-erased wrapper around a typed rclcpp::Publisher. ROS2 publishers are
@@ -57,6 +62,9 @@ struct Ros2Backend {
   using Odometry = nav_msgs::msg::Odometry;
   using Vector3Stamped = geometry_msgs::msg::Vector3Stamped;
   using TransformStamped = geometry_msgs::msg::TransformStamped;
+#ifdef BIEVR_WITH_GRID_MAP
+  using GridMap = grid_map_msgs::msg::GridMap;
+#endif  // BIEVR_WITH_GRID_MAP
 
   explicit Ros2Backend(Handle node)
       : node_(node), tf_(std::make_shared<tf2_ros::TransformBroadcaster>(node)) {}
@@ -67,6 +75,12 @@ struct Ros2Backend {
   }
 
   void sendTransform(const TransformStamped& transform) { tf_->sendTransform(transform); }
+
+#ifdef BIEVR_WITH_GRID_MAP
+  GridMap toGridMapMsg(const grid_map::GridMap& map) const {
+    return *grid_map::GridMapRosConverter::toMessage(map);
+  }
+#endif  // BIEVR_WITH_GRID_MAP
 
   Handle node_;
   std::shared_ptr<tf2_ros::TransformBroadcaster> tf_;

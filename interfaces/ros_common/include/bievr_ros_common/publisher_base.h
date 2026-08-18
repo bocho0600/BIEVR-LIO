@@ -25,6 +25,7 @@
 #include "bievr_lio/log++.h"
 #include "bievr_lio/pipeline.h"
 #include "bievr_ros_common/conversions.h"
+#include "bievr_ros_common/grid_map_builder.h"
 
 namespace bievr {
 
@@ -39,6 +40,9 @@ class PublisherBase {
   PublisherBase(Handle handle, std::shared_ptr<Pipeline> pipeline, const std::string& ns = "")
       : backend_(std::move(handle)), ns_(ns) {
     registerTypes<Pointcloud, IntensityPointcloud, Odometry, V3>(pipeline);
+#ifdef BIEVR_WITH_GRID_MAP
+    pipeline->registerGridPublisher(std::bind_front(&PublisherBase::publishGrid, this));
+#endif  // BIEVR_WITH_GRID_MAP
   }
   virtual ~PublisherBase() = default;
 
@@ -47,6 +51,22 @@ class PublisherBase {
                const std::string& child_frame = "") {
     return publishImpl(data, header, topic, child_frame);
   }
+
+#ifdef BIEVR_WITH_GRID_MAP
+  // Builds the elevation grid map from the map state and publishes it. Registered
+  // with the pipeline so the core bievr_lio library stays free of grid_map.
+  void publishGrid(const BIEVRMap& map, const V3& position, double length, double grid_res,
+                   const Header& header) {
+    grid_map::GridMap grid_map;
+    createGridMap(map, position, length, grid_res, grid_map);
+    // The cells hold world-frame heights, so the grid belongs in the same frame
+    // as the registered clouds. GridMapRosConverter takes the message header
+    // from the grid map itself, so both have to be set here.
+    grid_map.setFrameId(header.frame);
+    grid_map.setTimestamp(header.stamp);
+    publish(grid_map, header, "/elevation_map");
+  }
+#endif  // BIEVR_WITH_GRID_MAP
 
  private:
   // Pointcloud and IntensityPointcloud both go out as PointCloud2.
@@ -100,6 +120,17 @@ class PublisherBase {
     publishers_[topic].publish(msg);
     return true;
   }
+
+#ifdef BIEVR_WITH_GRID_MAP
+  bool publishImpl(const grid_map::GridMap& map, const Header& /*header*/, const std::string& topic,
+                   const std::string& /*child_frame*/) {
+    if (!getOrAdvertise<typename Backend::GridMap>(topic)) return false;
+    // ROS1 and ROS2 disagree on the GridMapRosConverter::toMessage signature, so
+    // the conversion itself is supplied by the backend.
+    publishers_[topic].publish(backend_.toGridMapMsg(map));
+    return true;
+  }
+#endif  // BIEVR_WITH_GRID_MAP
 
   // Look up (or lazily advertise) the publisher for `topic`, verifying that its
   // message type matches any previously advertised one. Returns false on a

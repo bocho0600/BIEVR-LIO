@@ -31,6 +31,14 @@
   <exec_depend>livox_ros_driver2</exec_depend>
   <build_depend>livox_ros_driver2</build_depend>
 
+  <!-- Optional: elevation map publishing, only built if grid_map is available -->
+  <build_depend>grid_map_core</build_depend>
+  <build_depend>grid_map_ros</build_depend>
+  <build_depend>grid_map_msgs</build_depend>
+  <exec_depend>grid_map_core</exec_depend>
+  <exec_depend>grid_map_ros</exec_depend>
+  <exec_depend>grid_map_msgs</exec_depend>
+
   <export>
     <build_type>ament_cmake</build_type>
   </export>

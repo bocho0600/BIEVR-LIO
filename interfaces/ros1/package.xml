@@ -27,4 +27,10 @@
   <exec_depend>livox_ros_driver</exec_depend>
   <build_depend>livox_ros_driver2</build_depend>
   <exec_depend>livox_ros_driver2</exec_depend>
+
+  <!-- Optional: elevation map publishing, only built if grid_map is available -->
+  <build_depend>grid_map_core</build_depend>
+  <build_depend>grid_map_ros</build_depend>
+  <exec_depend>grid_map_core</exec_depend>
+  <exec_depend>grid_map_ros</exec_depend>
 </package>

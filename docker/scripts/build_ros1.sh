@@ -49,6 +49,11 @@ cp -f package_ROS1.xml package.xml
 export ROS_EDITION=ROS1
 cd $CATKIN_WS/src
 
+# Clone grid_map, which enables the optional 2.5D elevation map publishing.
+# `master` is the ROS1 branch; the ROS2 branches are named after the distro.
+# catkin picks it up from the workspace via bievr_lio_ros' package.xml.
+git clone --branch master --single-branch --depth 1 https://github.com/ANYbotics/grid_map.git
+
 # Clone BIEVR-LIO
 git clone git@github.com:ethz-asl/BIEVR-LIO.git
 cd BIEVR-LIO

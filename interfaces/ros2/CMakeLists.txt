@@ -35,6 +35,12 @@ find_package(yaml-cpp REQUIRED)    # shared config_loader.h parses plain YAML fi
 # Livox is optional: only livox_ros_driver2 exists for ROS2.
 find_package(livox_ros_driver2 QUIET)
 
+# grid_map is optional: the 2.5D elevation map publishing is only built when all
+# three grid_map packages are available.
+find_package(grid_map_core QUIET)
+find_package(grid_map_ros QUIET)
+find_package(grid_map_msgs QUIET)
+
 set(ament_dependencies
   rclcpp
   sensor_msgs
@@ -51,6 +57,15 @@ if(livox_ros_driver2_FOUND)
   message(STATUS "bievr_lio_ros2: livox_ros_driver2 found, enabling Livox support.")
 else()
   message(STATUS "bievr_lio_ros2: livox_ros_driver2 NOT found, building without Livox support.")
+endif()
+
+if(grid_map_core_FOUND AND grid_map_ros_FOUND AND grid_map_msgs_FOUND)
+  set(BIEVR_GRID_MAP_FOUND TRUE)
+  list(APPEND ament_dependencies grid_map_core grid_map_ros grid_map_msgs)
+  message(STATUS "bievr_lio_ros2: grid_map found, enabling elevation map support.")
+else()
+  set(BIEVR_GRID_MAP_FOUND FALSE)
+  message(STATUS "bievr_lio_ros2: grid_map NOT found, building without elevation map support.")
 endif()
 
 # ---- Executables ----
@@ -75,6 +90,9 @@ foreach(target process_topics process_bag)
   )
   if(livox_ros_driver2_FOUND)
     target_compile_definitions(${target} PRIVATE BIEVR_WITH_LIVOX)
+  endif()
+  if(BIEVR_GRID_MAP_FOUND)
+    target_compile_definitions(${target} PRIVATE BIEVR_WITH_GRID_MAP)
   endif()
 endforeach()
 

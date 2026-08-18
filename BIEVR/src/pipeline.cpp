@@ -344,6 +344,9 @@ void Pipeline::publishFrame(const Header& header, const Transform& T_W_I,
                             const Pointcloud& full_registered, const Pointcloud& source_filtered,
                             const Pointcloud& source_coarse, const Pointcloud& source_fine,
                             const Pointcloud& undistorted, const IntensityView& intensities) {
+  if (config_.grid) {
+    publishGrid(T_W_I, header);
+  }
   if (config_.publish_all_clouds) {
     publishDebugClouds(source_filtered, source_coarse, source_fine, undistorted, intensities, T_W_I,
                        header);
@@ -387,6 +390,15 @@ void Pipeline::publishDebugClouds(const Pointcloud& source_filtered,
   // The undistorted cloud keeps its original point order, so the snapshotted
   // intensity row still lines up with it.
   publish(IntensityPointcloud(undistorted_cloud, intensities), body_header, "points/undistorted");
+}
+
+void Pipeline::publishGrid(const Transform& T_W_I, const Header& header) {
+  if (!grid_publisher_) {
+    LOG(E, "No grid publisher registered in pipeline.");
+    return;
+  }
+  Transform T_Base = T_W_I * config_.T_I_B;
+  grid_publisher_(*map_, T_Base.translation(), config_.grid_length, config_.grid_res, header);
 }
 
 void Pipeline::logTUM(double timestamp, const Transform& pose) {

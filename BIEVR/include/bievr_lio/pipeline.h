@@ -20,13 +20,17 @@ class Pipeline {
     ImuConfig imu;
     RegistrationConfig registration;
     BIEVRMap::Config map;
+    bool grid = false;
     bool print_timing = false;
     bool publish_all_clouds = false;
     bool print_debug = false;      // when true, lower the log level to show DEBUG messages
     bool print_dashboard = false;  // when true, print the fancy live status dashboard
     // Path to the ASCII art shown at the top of the dashboard (e.g. bievr_ascii.txt).
     std::string dashboard_ascii_path = "";
+    double grid_res = 0.04;
+    double grid_length = 8.;
     Transform T_I_L = Transform::Identity();  // Transform from LiDAR to IMU frame
+    Transform T_I_B = Transform::Identity();  // Transform from Body to IMU frame
     std::string map_frame = "map";
     std::string body_frame = "body";
     std::string log_path = "";
@@ -55,6 +59,13 @@ class Pipeline {
     };
     publishers_[typeid(T)] = wrapper;
   }
+
+  // Grid map building lives outside the core library (it depends on grid_map),
+  // so it is injected as a callback that receives the data it needs to build and
+  // publish the elevation grid map.
+  using GridPublishFunction =
+      std::function<void(const BIEVRMap&, const V3&, double, double, const Header&)>;
+  void registerGridPublisher(GridPublishFunction func) { grid_publisher_ = func; }
 
  private:
   enum class Phase { NeedBias, NeedMap, Running };
@@ -93,6 +104,7 @@ class Pipeline {
                           const Pointcloud& source_fine, const Pointcloud& undistorted_cloud,
                           const IntensityView& intensities, const Transform& T_W_I,
                           const Header& header);
+  void publishGrid(const Transform& T_W_I, const Header& header);
 
   // Logging
   void logTUM(double timestamp, const Transform& pose);
@@ -117,6 +129,7 @@ class Pipeline {
   using PublishFunction =
       std::function<void(const void*, const Header&, const std::string&, const std::string&)>;
   std::unordered_map<std::type_index, PublishFunction> publishers_;
+  GridPublishFunction grid_publisher_;
   std::shared_ptr<std::ofstream> tum_log_;
 
   // Accumulated state for the live status dashboard (printDashboard in utils).

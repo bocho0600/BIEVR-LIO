@@ -42,6 +42,11 @@ colcon build --cmake-args -DROS_EDITION=ROS2 -DDISTRO_ROS=jazzy --packages-selec
 
 cd $COLCON_WS/src
 
+# Clone grid_map, which enables the optional 2.5D elevation map publishing.
+# The branch has to match the distro of the base image (`master` is ROS1 only).
+# colcon picks it up from the workspace via bievr_lio_ros2' package.xml.
+git clone --branch jazzy --single-branch --depth 1 https://github.com/ANYbotics/grid_map.git
+
 # Clone BIEVR-LIO
 git clone git@github.com:ethz-asl/BIEVR-LIO.git
 

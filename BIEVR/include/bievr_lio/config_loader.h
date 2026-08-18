@@ -7,7 +7,7 @@
 // The ROS layer only carries the *paths* of the files to load.
 //
 // The YAML is organised into sections (topics / calibration / lidar / imu /
-// map / preprocess / optimization / debug). Files are
+// map / preprocess / optimization / debug / grid / base_calibration). Files are
 // layered: callers pass {params, sensor_config} and the later file wins on a
 // per-leaf basis, so the sensor config wins on any leaf both files define and a
 // section that appears in both (e.g. `imu`) merges by key.
@@ -180,6 +180,12 @@ inline void printConfigOverview(const Config& config) {
   os << "  log_path:             " << (hc.log_path.empty() ? "<none>" : hc.log_path) << "\n";
   os << "calibration (LiDAR -> IMU):\n";
   printExtrinsic(os, "T_I_L", hc.T_I_L);
+  os << "grid:                   " << yn(hc.grid) << "\n";
+  if (hc.grid) {
+    os << "  length_m:             " << hc.grid_length << "\n";
+    os << "  resolution_m:         " << hc.grid_res << "\n";
+    printExtrinsic(os, "T_I_B", hc.T_I_B);
+  }
   os << "==================================================";
   LOG(I, os.str());
 }
@@ -298,6 +304,20 @@ inline bool loadConfigFromYaml(const std::vector<std::string>& yaml_paths, Confi
           yaml.get<std::vector<double>>("calibration", "translation", {}),
           yaml.get<std::vector<double>>("calibration", "rotation", {}), "calibration", hc.T_I_L)) {
     return false;
+  }
+
+  // --- grid (optional; Body -> IMU extrinsic lives in base_calibration) ---
+  hc.grid = yaml.get<bool>("grid", "enabled", false);
+  if (hc.grid) {
+    hc.grid_length = yaml.get<double>("grid", "length_m", 8.);
+    hc.grid_res = yaml.get<double>("grid", "resolution_m", 0.04);
+
+    if (!config_internal::extrinsicFromVectors(
+            yaml.get<std::vector<double>>("base_calibration", "translation", {}),
+            yaml.get<std::vector<double>>("base_calibration", "rotation", {}), "base_calibration",
+            hc.T_I_B)) {
+      return false;
+    }
   }
 
   // --- threading (top-level, process-wide) ---
