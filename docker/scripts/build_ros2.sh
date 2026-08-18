@@ -48,8 +48,9 @@ cd $COLCON_WS/src
 git clone --branch jazzy --single-branch --depth 1 https://github.com/ANYbotics/grid_map.git
 
 # Clone BIEVR-LIO
-git clone git@github.com:ethz-asl/BIEVR-LIO.git
+git clone --branch feature/grid_map git@github.com:ethz-asl/BIEVR-LIO.git
 
 cd $COLCON_WS
 # Build it!!
 colcon build --packages-up-to bievr_lio_ros2
+colcon build --packages-up-to grid_map_rviz_plugin

@@ -55,11 +55,12 @@ cd $CATKIN_WS/src
 git clone --branch master --single-branch --depth 1 https://github.com/ANYbotics/grid_map.git
 
 # Clone BIEVR-LIO
-git clone git@github.com:ethz-asl/BIEVR-LIO.git
+git clone --branch feature/grid_map git@github.com:ethz-asl/BIEVR-LIO.git
 cd BIEVR-LIO
 
 # Build it!!
 catkin build --continue bievr_lio_ros -DROS_EDITION=ROS1
+catkin build grid_map_rviz_plugin
 
 # Add sourcing of the repo to the ~/.bashrc
 echo 'source $CATKIN_WS/devel/setup.bash' >> ~/.bashrc
