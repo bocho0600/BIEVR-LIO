@@ -33,6 +33,17 @@ challenging, information-sparse environments.
 Reliable odometry is essential for mobile robots as they increasingly enter more challenging environments, which often contain little information to constrain point cloud registration, resulting in degraded LiDAR–Inertial Odometry (LIO) accuracy or even divergence. To address this, we present BIEVR-LIO, a novel approach designed specifically to exploit subtle variations in the available geometry for improved robustness. We propose a high-resolution map representation that stores surfaces as voxel-wise oriented height images. This representation can directly be used for registration without the calculation of intermediate geometric primitives while still supporting efficient updates. Since informative geometry is often sparsely distributed in the environment, we further propose a map-informed point sampling strategy to focus registration on geometrically informative regions, improving robustness in uninformative environments while reducing computational cost compared to global high-resolution sampling. Experiments across multiple sensors, platforms, and environments demonstrate state-of-the-art performance in well-constrained scenes and substantial improvements in challenging scenarios where baseline methods diverge. Additionally, we demonstrate that the fine-grained geometry captured by BIEVR-LIO can be used for downstream tasks such as elevation mapping for robot locomotion.
 </details>
 
+> [!WARNING]
+> **This is the experimental `feature/grid_map` branch.** On top of the released
+> code it publishes a 2.5D elevation grid map
+> ([grid_map](https://github.com/ANYbotics/grid_map)) built from the near-field
+> bump images, as shown in the locomotion demo of the paper. This feature has so
+> far only been used for demonstration purposes and is not part of the paper's
+> evaluation. Expect rough edges: the parameters below have not been tuned across
+> sensors or environments. The grid is a pure consumer of the map and never feeds
+> back into the estimator, but it is built inline in the publishing path, so
+> enabling it costs time on every published frame.
+
 # Setup
 
 The core estimator (`bievr_lio`) is a self-contained, ROS-independent library. On
@@ -115,6 +126,17 @@ build the matching driver into `~/catkin_ws/src` *before* building BIEVR-LIO
   [livox_ros_driver2](https://github.com/Livox-SDK/livox_ros_driver2) +
   [Livox-SDK2](https://github.com/Livox-SDK/Livox-SDK2)
 
+(Optional) **Elevation grid map.** The elevation map publishing (enables
+`BIEVR_WITH_GRID_MAP`) is only compiled if
+[grid_map](https://github.com/ANYbotics/grid_map) is found in the workspace at
+build time. Otherwise BIEVR-LIO builds fine without it and `grid.enabled` has no
+effect. Clone it into `~/catkin_ws/src` *before* building BIEVR-LIO — `master` is
+the ROS1 branch:
+
+```bash
+git clone --branch master --single-branch https://github.com/ANYbotics/grid_map.git
+```
+
 Build and source it:
 
 ```bash
@@ -180,6 +202,19 @@ Livox-SDK2 installed system-wide). Only gen2 exists for ROS2 (enables
 
 - [livox_ros_driver2](https://github.com/Livox-SDK/livox_ros_driver2) +
   [Livox-SDK2](https://github.com/Livox-SDK/Livox-SDK2)
+
+(Optional) **Elevation grid map.** The elevation map publishing (enables
+`BIEVR_WITH_GRID_MAP`) is only compiled if
+[grid_map](https://github.com/ANYbotics/grid_map) is found in the workspace at
+build time. Otherwise BIEVR-LIO builds fine without it and `grid.enabled` has no
+effect. Clone it into `~/colcon_ws/src` *before* building BIEVR-LIO, picking the
+branch that matches your distro (`master` is ROS1-only), and install the two
+dependencies that `desktop-full` does not ship:
+
+```bash
+git clone --branch jazzy --single-branch https://github.com/ANYbotics/grid_map.git
+sudo apt install ros-jazzy-filters ros-jazzy-nav2-msgs
+```
 
 Build and source it (from the workspace root, so colcon picks up both `BIEVR/`,
 the core, and `interfaces/ros2`):
@@ -285,6 +320,37 @@ configs to `config/sensor_configs/<your_name>.yaml` and adjust:
 - `lidar.min_range_m` / `lidar.max_range_m` : the usable range of your LiDAR.
 
 The algorithm parameters in `params.yaml` can usually be left at their defaults.
+</details>
+
+<details>
+<summary><b>Elevation grid map (experimental)</b></summary>
+<br>
+
+When built with grid_map (see the build instructions above), BIEVR-LIO publishes
+a 2.5D elevation map of the robot's surroundings as a `grid_map_msgs/GridMap` on
+`/elevation_map`. It carries a single `elevation` layer of world-frame heights in
+the map frame, and is rebuilt from scratch on every published frame from the bump
+images of the voxels around the robot. To view it in RViz you additionally need
+the `grid_map_rviz_plugin` package from the same repository.
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `grid.enabled` | `False` | Publish the elevation map. Requires grid_map at build time **and** a `base_calibration` section. |
+| `grid.length_m` | `4.0` | Side length of the square grid [m]. Cost grows quadratically. |
+| `grid.resolution_m` | `0.04` | Cell size [m]. Values below `map.pixel_size_m` upsample the bump images without adding detail. |
+
+The grid is centred on the robot's base rather than on the IMU, so enabling it
+also requires the `T_IMU_BASE` extrinsic (base → IMU). This one is robot-specific
+rather than algorithmic, so it belongs in the sensor config; enabling
+`grid.enabled` without it is a fatal configuration error.
+
+```yaml
+base_calibration:
+  translation: [-0.386, -0.003, 0.431]
+  rotation: [1,  0,  0,
+             0, -1,  0,
+             0,  0, -1]
+```
 </details>
 
 # Acknowledgements
