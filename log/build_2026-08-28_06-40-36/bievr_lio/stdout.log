@@ -1,0 +1,33 @@
+[  7%] Building CXX object CMakeFiles/bievr_lio.dir/src/bievr_map.cpp.o
+[ 15%] Building CXX object CMakeFiles/bievr_lio.dir/src/preprocess.cpp.o
+[ 23%] Building CXX object CMakeFiles/bievr_lio.dir/src/ls_optimizer.cpp.o
+[ 30%] Building CXX object CMakeFiles/bievr_lio.dir/src/pipeline.cpp.o
+[ 38%] Building CXX object CMakeFiles/bievr_lio.dir/src/synchronizer.cpp.o
+[ 46%] Linking CXX shared library libbievr_lio.so
+[100%] Built target bievr_lio
+-- Install configuration: "Release"
+-- Installing: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/lib64/libbievr_lio.so
+-- Set non-toolchain portion of runtime path of "/tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/lib64/libbievr_lio.so" to ""
+-- Up-to-date: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include
+-- Up-to-date: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/unordered_dense
+-- Up-to-date: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/unordered_dense/stl.h
+-- Up-to-date: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/unordered_dense/unordered_dense.h
+-- Up-to-date: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio
+-- Installing: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/bievr_map.h
+-- Up-to-date: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/imu_integrator.h
+-- Up-to-date: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/synchronizer.h
+-- Up-to-date: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/undistort.h
+-- Up-to-date: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/timing.h
+-- Up-to-date: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/prior_factor.h
+-- Up-to-date: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/preprocess.h
+-- Installing: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/config_loader.h
+-- Up-to-date: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/ls_optimizer.h
+-- Installing: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/pipeline.h
+-- Up-to-date: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/utils.h
+-- Up-to-date: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/log++.h
+-- Up-to-date: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/inertial_factor.h
+-- Up-to-date: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/common.h
+-- Up-to-date: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/lib64/cmake/bievr_lio/bievr_lioTargets.cmake
+-- Up-to-date: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/lib64/cmake/bievr_lio/bievr_lioTargets-release.cmake
+-- Up-to-date: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/lib64/cmake/bievr_lio/bievr_lioConfig.cmake
+-- Up-to-date: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/lib64/cmake/bievr_lio/bievr_lioConfigVersion.cmake

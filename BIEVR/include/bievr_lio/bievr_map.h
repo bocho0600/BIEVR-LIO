@@ -48,6 +48,24 @@ class BIEVRMap {
     return hashIndexVoxel(voxel_idx);
   }
   size_t size() const { return map_.size(); }
+
+  /*** Every observed voxel's surface as world points.
+   *
+   * The map stores a height image per voxel rather than points, so this is the exact
+   * inverse of how points went in. integratePoints writes bump_img_(y, x) at
+   * x = round(p_O.x / px_size), y = round(p_O.y / px_size) with p_O = T_C_W_ * p_W, so a
+   * pixel comes back out as
+   *
+   *   p_W = T_C_W_^-1 * (x * px_size, y * px_size, bump_smoothed_(y, x))
+   *
+   * bump_smoothed_ and bump_weights_ > 0 rather than the raw image, because that pair is
+   * precisely what registration samples (getSubPixelValue) -- so what this returns is the
+   * surface the filter actually believes in, not an approximation of it.
+   *
+   * stride > 1 keeps every nth pixel along both axes, which is the cheap way to trade map
+   * resolution for message size and extraction time.
+   ***/
+  void extractSurface(Pointcloud& out, int stride = 1) const;
   Eigen::Vector3i getVoxelIdx(const Point& point) const;
   const Voxel* getVoxel(const size_t hash_idx) const;
   bool nearestVoxel(const Point& point, size_t& result) const;

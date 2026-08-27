@@ -23,6 +23,7 @@ find_package(sensor_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(std_srvs REQUIRED)   # /map_save is a std_srvs/Trigger
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(rosbag2_cpp REQUIRED)
@@ -41,6 +42,7 @@ set(ament_dependencies
   nav_msgs
   geometry_msgs
   std_msgs
+  std_srvs
   tf2
   tf2_ros
   rosbag2_cpp

@@ -1,0 +1,35 @@
+In file included from /home/bocho0600/roar/BIEVR-LIO/BIEVR/src/ls_optimizer.cpp:9:
+/home/bocho0600/roar/BIEVR-LIO/BIEVR/include/bievr_lio/log++.h:533:9: warning: ‘DLOG_FIRST_N’ redefined
+  533 | #define DLOG_FIRST_N(severity, n) LPP_WARN("DLOG_FIRST_N is a Log++ extension"); LPP_ASSERT_GLOG(LPP_INTL::GlogSeverity::severity); \
+      |         ^~~~~~~~~~~~
+In file included from /home/bocho0600/roar/BIEVR-LIO/BIEVR/src/bievr_map.cpp:9:
+/home/bocho0600/roar/BIEVR-LIO/BIEVR/include/bievr_lio/log++.h:533:9: warning: ‘DLOG_FIRST_N’ redefined
+  533 | #define DLOG_FIRST_N(severity, n) LPP_WARN("DLOG_FIRST_N is a Log++ extension"); LPP_ASSERT_GLOG(LPP_INTL::GlogSeverity::severity); \
+      |         ^~~~~~~~~~~~
+In file included from /home/bocho0600/roar/BIEVR-LIO/BIEVR/include/bievr_lio/log++.h:80:
+/nix/store/cr54cdl7rkjh13pyhf22i9spm349lsvr-glog-0.7.1/include/glog/logging.h:1116:11: note: this is the location of the previous definition
+ 1116 | #  define DLOG_FIRST_N(severity, n) \
+      |           ^~~~~~~~~~~~
+In file included from /home/bocho0600/roar/BIEVR-LIO/BIEVR/include/bievr_lio/log++.h:80:
+/nix/store/cr54cdl7rkjh13pyhf22i9spm349lsvr-glog-0.7.1/include/glog/logging.h:1116:11: note: this is the location of the previous definition
+ 1116 | #  define DLOG_FIRST_N(severity, n) \
+      |           ^~~~~~~~~~~~
+In file included from /home/bocho0600/roar/BIEVR-LIO/BIEVR/include/bievr_lio/pipeline.h:8,
+                 from /home/bocho0600/roar/BIEVR-LIO/BIEVR/include/bievr_lio/synchronizer.h:6,
+                 from /home/bocho0600/roar/BIEVR-LIO/BIEVR/src/synchronizer.cpp:1:
+/home/bocho0600/roar/BIEVR-LIO/BIEVR/include/bievr_lio/log++.h:533:9: warning: ‘DLOG_FIRST_N’ redefined
+  533 | #define DLOG_FIRST_N(severity, n) LPP_WARN("DLOG_FIRST_N is a Log++ extension"); LPP_ASSERT_GLOG(LPP_INTL::GlogSeverity::severity); \
+      |         ^~~~~~~~~~~~
+In file included from /home/bocho0600/roar/BIEVR-LIO/BIEVR/include/bievr_lio/log++.h:80:
+/nix/store/cr54cdl7rkjh13pyhf22i9spm349lsvr-glog-0.7.1/include/glog/logging.h:1116:11: note: this is the location of the previous definition
+ 1116 | #  define DLOG_FIRST_N(severity, n) \
+      |           ^~~~~~~~~~~~
+In file included from /home/bocho0600/roar/BIEVR-LIO/BIEVR/include/bievr_lio/pipeline.h:8,
+                 from /home/bocho0600/roar/BIEVR-LIO/BIEVR/src/pipeline.cpp:1:
+/home/bocho0600/roar/BIEVR-LIO/BIEVR/include/bievr_lio/log++.h:533:9: warning: ‘DLOG_FIRST_N’ redefined
+  533 | #define DLOG_FIRST_N(severity, n) LPP_WARN("DLOG_FIRST_N is a Log++ extension"); LPP_ASSERT_GLOG(LPP_INTL::GlogSeverity::severity); \
+      |         ^~~~~~~~~~~~
+In file included from /home/bocho0600/roar/BIEVR-LIO/BIEVR/include/bievr_lio/log++.h:80:
+/nix/store/cr54cdl7rkjh13pyhf22i9spm349lsvr-glog-0.7.1/include/glog/logging.h:1116:11: note: this is the location of the previous definition
+ 1116 | #  define DLOG_FIRST_N(severity, n) \
+      |           ^~~~~~~~~~~~

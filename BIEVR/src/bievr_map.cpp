@@ -239,6 +239,66 @@ bool BIEVRMap::updateBumpImage(const std::vector<Eigen::Vector4d>& points, Voxel
   return true;
 }
 
+void BIEVRMap::extractSurface(Pointcloud& out, int stride) const {
+  if (stride < 1) stride = 1;
+  // unordered_dense keeps its values in one contiguous vector, which is what makes both
+  // passes below a flat parallel_for rather than a walk over buckets.
+  const auto& entries = map_.values();
+  const size_t n_voxels = entries.size();
+  if (n_voxels == 0) {
+    out.clear();
+    return;
+  }
+
+  // Two passes rather than per-thread buffers that get concatenated: counting first lets
+  // the second pass write straight into the output at a known offset, so there is one
+  // allocation and the point order does not depend on how TBB happened to schedule the
+  // work.
+  std::vector<size_t> counts(n_voxels, 0);
+  tbb::parallel_for(tbb::blocked_range<size_t>(0, n_voxels),
+                    [&](const tbb::blocked_range<size_t>& r) {
+                      for (size_t i = r.begin(); i != r.end(); ++i) {
+                        const Voxel& voxel = entries[i].second.voxel;
+                        if (!voxel.observed_) continue;
+                        const auto& weights = voxel.bump_weights_;
+                        size_t count = 0;
+                        for (int y = 0; y < weights.rows(); y += stride) {
+                          for (int x = 0; x < weights.cols(); x += stride) {
+                            if (weights(y, x) > 0.f) ++count;
+                          }
+                        }
+                        counts[i] = count;
+                      }
+                    });
+
+  std::vector<size_t> offsets(n_voxels + 1, 0);
+  for (size_t i = 0; i < n_voxels; ++i) offsets[i + 1] = offsets[i] + counts[i];
+  out.resize(offsets.back());
+  if (offsets.back() == 0) return;
+
+  tbb::parallel_for(
+      tbb::blocked_range<size_t>(0, n_voxels), [&](const tbb::blocked_range<size_t>& r) {
+        for (size_t i = r.begin(); i != r.end(); ++i) {
+          if (counts[i] == 0) continue;
+          const Voxel& voxel = entries[i].second.voxel;
+          // T_C_W_ maps world into the voxel's image frame, so its inverse brings a pixel
+          // back out. Inverted once per voxel, not once per pixel.
+          const Transform T_W_C(voxel.T_C_W_.inverse());
+          const auto& image = voxel.bump_smoothed_;
+          const auto& weights = voxel.bump_weights_;
+          size_t k = offsets[i];
+          for (int y = 0; y < weights.rows(); y += stride) {
+            for (int x = 0; x < weights.cols(); x += stride) {
+              if (weights(y, x) <= 0.f) continue;
+              const Point p_O(x * config_.px_size, y * config_.px_size,
+                              static_cast<double>(image(y, x)));
+              out.data().col(k++) = T_W_C * p_O;
+            }
+          }
+        }
+      });
+}
+
 BIEVRMap::ImageBounds BIEVRMap::computeImageSize(const Voxel& voxel,
                                                  const Eigen::Vector3d& reference_point) const {
   Eigen::Vector3d p_origin = getVoxelOrigin(reference_point);

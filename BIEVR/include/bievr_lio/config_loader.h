@@ -193,6 +193,11 @@ inline void printConfigOverview(const Config& config) {
   os << "publish:\n";
   os << "  tf:                   " << yn(hc.publish_tf) << "\n";
   os << "  tf_lidar:             " << yn(hc.publish_tf_lidar) << "\n";
+  os << "  map_interval_s:       "
+     << (hc.map_interval_s > 0. ? std::to_string(hc.map_interval_s) : std::string("off"))
+     << "\n";
+  os << "  map_stride:           " << hc.map_stride << "\n";
+  os << "  map_path:             " << (hc.map_path.empty() ? "<none>" : hc.map_path) << "\n";
   os << "debug:\n";
   os << "  publish_all_clouds:        " << yn(hc.publish_all_clouds) << "\n";
   os << "  print_timing:         " << yn(hc.print_timing) << "\n";
@@ -306,6 +311,11 @@ inline bool loadConfigFromYaml(const std::vector<std::string>& yaml_paths, Confi
   hc.heading_at_base = yaml.get<bool>("base", "heading_at_base", hc.heading_at_base);
 
   // --- publish (what goes onto TF; the topics themselves are not optional) ---
+  hc.map_interval_s = yaml.get<double>("publish", "map_interval_s", hc.map_interval_s);
+  hc.map_path = yaml.get<std::string>("publish", "map_path", hc.map_path);
+  if (!config_internal::getPositive(yaml, "publish", "map_stride", 1, hc.map_stride)) {
+    return false;
+  }
   hc.publish_tf = yaml.get<bool>("publish", "tf", hc.publish_tf);
   hc.publish_tf_lidar = yaml.get<bool>("publish", "tf_lidar", hc.publish_tf_lidar);
 

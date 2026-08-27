@@ -1,0 +1,52 @@
+CMake Warning at /nix/store/k1b82rs72af124wmq6nb00nhw5i7ikp7-cmake-4.1.2/share/cmake-4.1/Modules/FindBLAS.cmake:1359 (find_package):
+  By not providing "Findnvpl.cmake" in CMAKE_MODULE_PATH this project has
+  asked CMake to find a package configuration file provided by "nvpl", but
+  CMake did not find one.
+
+  Could not find a package configuration file provided by "nvpl" with any of
+  the following names:
+
+    nvplConfig.cmake
+    nvpl-config.cmake
+
+  Add the installation prefix of "nvpl" to CMAKE_PREFIX_PATH or set
+  "nvpl_DIR" to a directory containing one of the above files.  If "nvpl"
+  provides a separate development package or SDK, be sure it has been
+  installed.
+Call Stack (most recent call first):
+  /nix/store/k1wbmi5va8pkzgh6jnw61i5l7gxxq7pp-ceres-solver-2.1.0-dev/lib/cmake/Ceres/FindSuiteSparse.cmake:288 (find_package)
+  /nix/store/k1b82rs72af124wmq6nb00nhw5i7ikp7-cmake-4.1.2/share/cmake-4.1/Modules/CMakeFindDependencyMacro.cmake:78 (find_package)
+  /nix/store/k1wbmi5va8pkzgh6jnw61i5l7gxxq7pp-ceres-solver-2.1.0-dev/lib/cmake/Ceres/CeresConfig.cmake:183 (find_dependency)
+  /nix/store/k1b82rs72af124wmq6nb00nhw5i7ikp7-cmake-4.1.2/share/cmake-4.1/Modules/CMakeFindDependencyMacro.cmake:78 (find_package)
+  /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/lib64/cmake/bievr_lio/bievr_lioConfig.cmake:43 (find_dependency)
+  CMakeLists.txt:31 (find_package)
+
+
+CMake Warning at /nix/store/k1b82rs72af124wmq6nb00nhw5i7ikp7-cmake-4.1.2/share/cmake-4.1/Modules/FindBLAS.cmake:1359 (find_package):
+  By not providing "Findnvpl.cmake" in CMAKE_MODULE_PATH this project has
+  asked CMake to find a package configuration file provided by "nvpl", but
+  CMake did not find one.
+
+  Could not find a package configuration file provided by "nvpl" with any of
+  the following names:
+
+    nvplConfig.cmake
+    nvpl-config.cmake
+
+  Add the installation prefix of "nvpl" to CMAKE_PREFIX_PATH or set
+  "nvpl_DIR" to a directory containing one of the above files.  If "nvpl"
+  provides a separate development package or SDK, be sure it has been
+  installed.
+Call Stack (most recent call first):
+  /nix/store/k1b82rs72af124wmq6nb00nhw5i7ikp7-cmake-4.1.2/share/cmake-4.1/Modules/FindLAPACK.cmake:262 (find_package)
+  /nix/store/k1b82rs72af124wmq6nb00nhw5i7ikp7-cmake-4.1.2/share/cmake-4.1/Modules/FindLAPACK.cmake:308 (_lapack_find_dependency)
+  /nix/store/k1wbmi5va8pkzgh6jnw61i5l7gxxq7pp-ceres-solver-2.1.0-dev/lib/cmake/Ceres/FindSuiteSparse.cmake:295 (find_package)
+  /nix/store/k1b82rs72af124wmq6nb00nhw5i7ikp7-cmake-4.1.2/share/cmake-4.1/Modules/CMakeFindDependencyMacro.cmake:78 (find_package)
+  /nix/store/k1wbmi5va8pkzgh6jnw61i5l7gxxq7pp-ceres-solver-2.1.0-dev/lib/cmake/Ceres/CeresConfig.cmake:183 (find_dependency)
+  /nix/store/k1b82rs72af124wmq6nb00nhw5i7ikp7-cmake-4.1.2/share/cmake-4.1/Modules/CMakeFindDependencyMacro.cmake:78 (find_package)
+  /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/lib64/cmake/bievr_lio/bievr_lioConfig.cmake:43 (find_dependency)
+  CMakeLists.txt:31 (find_package)
+
+
+/nix/store/39lyf5g2iz4jd2r6q4g5whk9vw09zglj-binutils-2.46/bin/ld.bfd: warning: libgflags.so.2.3, needed by /nix/store/cr54cdl7rkjh13pyhf22i9spm349lsvr-glog-0.7.1/lib/libglog.so.0.7.1, may conflict with libgflags.so.2.2
+/nix/store/39lyf5g2iz4jd2r6q4g5whk9vw09zglj-binutils-2.46/bin/ld.bfd: warning: libgflags.so.2.3, needed by /nix/store/cr54cdl7rkjh13pyhf22i9spm349lsvr-glog-0.7.1/lib/libglog.so.0.7.1, may conflict with libgflags.so.2.2

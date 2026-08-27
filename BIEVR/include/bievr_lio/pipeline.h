@@ -46,6 +46,15 @@ class Pipeline {
     /*** Broadcast the odometry pose on TF as well as publishing it. Turn this off when
          another node (e.g. a robot_localization EKF) already owns the map_frame -> body
          edge: two publishers on one TF edge make lookups depend on message arrival order. ***/
+    /*** The accumulated map, as a cloud. Off by default because it is not free: every
+         observed voxel's height image is walked and reprojected, so at a full 400k-voxel
+         map that is tens of millions of pixels, and it runs on the callback thread. An
+         interval of a few seconds is what this is meant for, not a per-scan publish.
+         map_stride keeps every nth pixel along both axes -- 2 quarters the point count. ***/
+    double map_interval_s = 0.0;  // <= 0 disables it, leaving map_save on demand only
+    int map_stride = 1;
+    /*** Where saveMap writes. A leading ~ is expanded. ***/
+    std::string map_path = "";
     bool publish_tf = true;
     /*** Also broadcast a static body_frame -> lidar_frame transform, taken from the
          LiDAR-IMU calibration. Off by default: a robot description usually already
@@ -92,6 +101,14 @@ class Pipeline {
   // than from the config. Overwrites Config::T_I_L, which is the identity until it lands --
   // hence the gate in processFrame: every scan is transformed by it, so no frame may be
   // processed before it arrives.
+  // Publishes the accumulated map on the "map" topic. Costly -- see Config::map_interval_s.
+  // Does nothing until the filter has a pose to stamp it with.
+  bool publishMap();
+  // Writes the same cloud to `path` (or Config::map_path when empty) as a binary PCD.
+  // Returns false, with `message` set, if there is nothing to write or the file cannot be
+  // opened. No PCL dependency: the format is a short text header plus packed float32 xyz.
+  bool saveMap(const std::string& path, std::string& message) const;
+
   void setLidarExtrinsic(const Transform& T_I_L);
   bool lidarExtrinsicValid() const { return !config_.calibration_from_tf || lidar_extrinsic_valid_; }
   // Whether anything that is enabled actually needs the extrinsic above.

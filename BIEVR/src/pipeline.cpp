@@ -1,7 +1,10 @@
 #include "bievr_lio/pipeline.h"
 
+#include <cstdlib>
+#include <filesystem>
 #include <fstream>
 #include <sstream>
+#include <system_error>
 
 #include "bievr_lio/inertial_factor.h"
 #include "bievr_lio/prior_factor.h"
@@ -203,6 +206,74 @@ void Pipeline::processFrame(const std::vector<ImuMeasurement>& imu_data,
                    timing::Timing::GetMeanSeconds("step"), timing::Timing::GetMaxSeconds("step"),
                    n_effective_points);
   }
+}
+
+bool Pipeline::publishMap() {
+  if (states_.empty()) {
+    LOG_TIMED(W, 5.0, "Not publishing the map yet: the filter has no pose to stamp it with.");
+    return false;
+  }
+  Pointcloud cloud;
+  map_->extractSurface(cloud, config_.map_stride);
+  if (cloud.empty()) return false;
+  const Header header{states_.rbegin()->first, static_cast<uint32_t>(seq_counter_),
+                      config_.map_frame};
+  publish(cloud, header, "map");
+  return true;
+}
+
+bool Pipeline::saveMap(const std::string& path, std::string& message) const {
+  std::string out_path = path.empty() ? config_.map_path : path;
+  if (out_path.empty()) {
+    message = "No output path: pass one, or set publish.map_path in the config.";
+    return false;
+  }
+  // Expand a leading ~ here rather than making every caller do it: these paths are written
+  // by hand in a YAML file that no shell ever sees.
+  if (out_path[0] == '~') {
+    const char* home = std::getenv("HOME");
+    if (home) out_path = std::string(home) + out_path.substr(1);
+  }
+
+  Pointcloud cloud;
+  map_->extractSurface(cloud, config_.map_stride);
+  if (cloud.empty()) {
+    message = "The map is empty; nothing written.";
+    return false;
+  }
+
+  std::error_code ec;
+  const std::filesystem::path fs_path(out_path);
+  if (fs_path.has_parent_path()) {
+    std::filesystem::create_directories(fs_path.parent_path(), ec);
+  }
+  std::ofstream file(out_path, std::ios::binary | std::ios::trunc);
+  if (!file.is_open()) {
+    message = "Could not open '" + out_path + "' for writing.";
+    return false;
+  }
+
+  // Binary PCD by hand, so the core keeps its no-PCL dependency list. float32 xyz is what
+  // every consumer of a map file reads, and the map carries no intensity to write anyway.
+  const size_t n = cloud.size();
+  file << "# .PCD v0.7 - Point Cloud Data file format\n"
+       << "VERSION 0.7\nFIELDS x y z\nSIZE 4 4 4\nTYPE F F F\nCOUNT 1 1 1\n"
+       << "WIDTH " << n << "\nHEIGHT 1\nVIEWPOINT 0 0 0 1 0 0 0\n"
+       << "POINTS " << n << "\nDATA binary\n";
+  std::vector<float> buffer(n * 3);
+  for (size_t i = 0; i < n; ++i) {
+    buffer[3 * i + 0] = static_cast<float>(cloud[i].x());
+    buffer[3 * i + 1] = static_cast<float>(cloud[i].y());
+    buffer[3 * i + 2] = static_cast<float>(cloud[i].z());
+  }
+  file.write(reinterpret_cast<const char*>(buffer.data()),
+             static_cast<std::streamsize>(buffer.size() * sizeof(float)));
+  if (!file) {
+    message = "Write to '" + out_path + "' failed partway through.";
+    return false;
+  }
+  message = "Wrote " + std::to_string(n) + " points to '" + out_path + "'.";
+  return true;
 }
 
 void Pipeline::setLidarExtrinsic(const Transform& T_I_L) {

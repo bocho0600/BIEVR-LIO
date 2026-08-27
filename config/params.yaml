@@ -99,6 +99,19 @@ publish:
   # extrinsic. Off by default: a robot description usually already publishes that edge.
   tf_lidar: false
 
+  # The accumulated map, published on <ns>/map as a PointCloud2. The map is stored as a
+  # height image per voxel rather than as points, so this reprojects every observed pixel
+  # back into the world -- tens of millions of them once the map is large, on the same
+  # thread that runs the filter. Seconds, not per scan. 0 disables it and leaves the
+  # map_save service as the only way to get the map out.
+  map_interval_s: 0.0
+  # Keep every nth pixel along both axes when doing that: 2 quarters the point count and the
+  # work, at half the map resolution.
+  map_stride: 1
+  # Where the map_save service writes a binary PCD. A leading ~ is expanded. Empty means
+  # map_save has nowhere to go and will say so rather than guess.
+  map_path: ""
+
 debug:
   publish_all_clouds: False # Publish all clouds (fine, coarse, deskewed)
   timing: False
