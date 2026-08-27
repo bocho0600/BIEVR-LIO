@@ -88,7 +88,7 @@ int main(int argc, char** argv) {
     if (type == "sensor_msgs/msg/PointCloud2") {
       auto msg = deserialize<sensor_msgs::msg::PointCloud2>(serialized);
       bievr::StampedIntensityPointcloud pointcloud;
-      bievr::msgToPointcloud(msg, pointcloud);
+      bievr::msgToPointcloud(msg, pointcloud, config.pipeline_config.preprocess.allow_untimed);
       synchronizer->addPointcloud(pointcloud);
     }
 #ifdef BIEVR_WITH_LIVOX

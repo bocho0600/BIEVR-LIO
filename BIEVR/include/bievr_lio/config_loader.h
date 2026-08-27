@@ -164,6 +164,7 @@ inline void printConfigOverview(const Config& config) {
   os << "  min_range_m:          " << hc.preprocess.min_range << "\n";
   os << "  max_range_m:          " << hc.preprocess.max_range << "\n";
   os << "  frame:                " << hc.lidar_frame << "\n";
+  os << "  allow_untimed:        " << yn(hc.preprocess.allow_untimed) << "\n";
   os << "map:\n";
   os << "  pixel_size_m:   " << hc.map.px_size << "\n";
   os << "  voxel_size_m:   " << hc.map.voxel_size << "\n";
@@ -249,6 +250,8 @@ inline bool loadConfigFromYaml(const std::vector<std::string>& yaml_paths, Confi
   // lidar_frame -> base_frame lookup the wrapper reads from TF for the `base` switches, and
   // the child of the optional static body -> lidar transform.
   hc.lidar_frame = yaml.get<std::string>("lidar", "frame", hc.lidar_frame);
+  hc.preprocess.allow_untimed =
+      yaml.get<bool>("lidar", "allow_untimed", hc.preprocess.allow_untimed);
 
   // --- map ---
   // These resolutions/tolerances are optional (fall back to the defaults below)

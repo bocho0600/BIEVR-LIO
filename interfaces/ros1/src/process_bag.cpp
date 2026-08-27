@@ -56,7 +56,7 @@ int main(int argc, char** argv) {
     if ((msg.getDataType() == "sensor_msgs/PointCloud2")) {
       sensor_msgs::PointCloud2::ConstPtr s = msg.instantiate<sensor_msgs::PointCloud2>();
       bievr::StampedIntensityPointcloud pointcloud;
-      bievr::msgToPointcloud(*s, pointcloud);
+      bievr::msgToPointcloud(*s, pointcloud, config.pipeline_config.preprocess.allow_untimed);
       synchronizer.addPointcloud(pointcloud);
     }
 #ifdef BIEVR_WITH_LIVOX

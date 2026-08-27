@@ -91,7 +91,8 @@ int main(int argc, char** argv) {
           rclcpp::Serialization<sensor_msgs::msg::PointCloud2>().deserialize_message(
               serialized.get(), &msg);
           bievr::StampedIntensityPointcloud pointcloud;
-          if (bievr::msgToPointcloud(msg, pointcloud)) {
+          if (bievr::msgToPointcloud(msg, pointcloud,
+                                     config.pipeline_config.preprocess.allow_untimed)) {
             synchronizer->addPointcloud(pointcloud);
           }
         }

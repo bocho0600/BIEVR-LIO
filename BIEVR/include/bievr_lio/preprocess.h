@@ -12,6 +12,13 @@ struct PreprocessConfig {
   double min_range = 0.5;              // meters
   double max_range = 100.0;            // meters
   double downsample_resolution = 0.1;  // meters
+  /*** Accept a cloud that carries no per-point time field (t / time / timestamp) and
+       treat the whole scan as taken at one instant. Off by default: on a real spinning
+       sensor those times are what de-skewing runs on, and silently pretending a swept
+       scan is instantaneous bends the map while the odometry still looks plausible. A
+       simulated LiDAR is the case this exists for -- a rendered scan really is
+       instantaneous, so zero offsets are the correct answer rather than a fallback. ***/
+  bool allow_untimed = false;
 };
 
 void voxelDownsample(const Pointcloud& points_raw, Pointcloud& points_down, double voxel_size);

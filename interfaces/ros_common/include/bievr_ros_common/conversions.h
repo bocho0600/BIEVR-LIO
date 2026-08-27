@@ -131,6 +131,7 @@ enum class TimeEncoding {
   kNanosUint32,   // "t": uint32 nanoseconds, relative to scan start (Ouster)
   kSecondsFloat,  // "time": float32 seconds, relative to an arbitrary origin (Velodyne)
   kStampDouble,   // "timestamp": float64 absolute seconds (or ns above a threshold) (Hesai)
+  kNone,          // no per-point time field: the whole scan is taken at one instant
 };
 
 template <typename FieldT>
@@ -228,11 +229,14 @@ bool livoxToStampedIntensity(const LivoxMsgT& pointcloud_msg, uint64_t base_stam
 // Message -> LIO
 // ---------------------------------------------------------------------------
 
-// PointCloud2 -> StampedIntensityPointcloud.
+// PointCloud2 -> StampedIntensityPointcloud. `allow_untimed` mirrors
+// PreprocessConfig::allow_untimed: with no per-point time field, false rejects the cloud
+// and true reads it as an instantaneous scan (every offset zero).
 template <typename PointCloud2T>
   requires conv_detail::PointCloud2Like<PointCloud2T>
 bool msgToPointcloud(const PointCloud2T& pointcloud_msg,
-                     StampedIntensityPointcloud& stamped_pointcloud) {
+                     StampedIntensityPointcloud& stamped_pointcloud,
+                     bool allow_untimed = false) {
   using namespace conv_detail;
   timing::Timer conversion_timer("00_conversion_pc2");
 
@@ -274,8 +278,20 @@ bool msgToPointcloud(const PointCloud2T& pointcloud_msg,
   } else if (const auto* f = findField(fields, "timestamp")) {
     enc = TimeEncoding::kStampDouble;
     off_t = f->offset;
+  } else if (allow_untimed) {
+    // Every point at offset zero, so undistortion resolves to the identity rather than
+    // being skipped: the pose is still predicted at the scan stamp, and nothing is
+    // spread across a sweep that did not happen.
+    enc = TimeEncoding::kNone;
+    off_t = 0;
+    LOG_FIRST(I, 1,
+              "Pointcloud has no per-point time field; reading it as an instantaneous scan "
+              "(lidar.allow_untimed).");
   } else {
-    LOG(E, "Pointcloud has no recognized time field (t/time/timestamp); skipping.");
+    LOG(E,
+        "Pointcloud has no recognized time field (t/time/timestamp); skipping. Set "
+        "lidar.allow_untimed if the sensor really does capture the whole scan at once "
+        "(e.g. a simulated LiDAR).");
     return false;
   }
 
@@ -316,6 +332,9 @@ bool msgToPointcloud(const PointCloud2T& pointcloud_msg,
               time = (raw > kTimestampNsThreshold ? raw * 1e-9 : raw) - stamp_s;
               break;
             }
+            case TimeEncoding::kNone:
+              time = 0.0;
+              break;
           }
 
           if (valid) {

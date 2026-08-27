@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
           sensor_msgs::PointCloud2::ConstPtr pc_msg = msg->instantiate<sensor_msgs::PointCloud2>();
           if (pc_msg) {
             bievr::StampedIntensityPointcloud pointcloud;
-            bievr::msgToPointcloud(*pc_msg, pointcloud);
+            bievr::msgToPointcloud(*pc_msg, pointcloud, config.pipeline_config.preprocess.allow_untimed);
             synchronizer.addPointcloud(pointcloud);
           } else {
             LOG(E, "Failed to convert ShapeShifter to PointCloud2");

@@ -41,6 +41,13 @@ lidar:
   # lidar -> base lookup the `base` switches below read from TF, and the child of the
   # optional static transform under `publish`.
   frame: "lidar"
+  # true: accept a cloud that carries no per-point time field (t / time / timestamp) and
+  # read the whole scan as taken at one instant. Off by default, because on a real spinning
+  # sensor those times are what de-skewing runs on and treating a swept scan as
+  # instantaneous bends the map while the odometry still looks plausible. Turn it on for a
+  # simulated LiDAR: a rendered scan really is instantaneous, so zero offsets are the
+  # correct reading rather than a fallback.
+  allow_untimed: false
 
 # The robot base. Only `frame` is free-standing; the three switches below all need
 # lidar.frame -> base.frame to be resolvable in TF, which the node reads once at startup.
