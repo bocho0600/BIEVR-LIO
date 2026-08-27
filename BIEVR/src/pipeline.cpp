@@ -52,6 +52,17 @@ void Pipeline::processFrame(const std::vector<ImuMeasurement>& imu_data,
     return;
   }
 
+  /*** Every scan is transformed into the IMU frame by T_I_L below, so a frame processed
+       before TF has supplied it would be registered against the map at the wrong place and
+       drag the estimate with it. ***/
+  if (!lidarExtrinsicValid()) {
+    LOG_TIMED(W, 5.0,
+              "Waiting for the " << config_.body_frame << " -> " << config_.lidar_frame
+                                 << " transform: calibration.from_tf is on, so the "
+                                    "LiDAR-IMU extrinsic comes from TF.");
+    return;
+  }
+
   /*** origin_at_base and heading_at_base are applied inside initializeBias, so the world
        frame they define cannot be reconstructed after the fact -- the map is built in it.
        Hold the whole pipeline back until the wrapper has resolved lidar_frame ->
@@ -192,6 +203,11 @@ void Pipeline::processFrame(const std::vector<ImuMeasurement>& imu_data,
                    timing::Timing::GetMeanSeconds("step"), timing::Timing::GetMaxSeconds("step"),
                    n_effective_points);
   }
+}
+
+void Pipeline::setLidarExtrinsic(const Transform& T_I_L) {
+  config_.T_I_L = T_I_L;
+  lidar_extrinsic_valid_ = true;
 }
 
 void Pipeline::setBaseExtrinsic(const Transform& T_I_B) {

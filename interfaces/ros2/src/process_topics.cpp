@@ -134,44 +134,69 @@ int main(int argc, char** argv) {
     static_tf_broadcaster->sendTransform(static_tf);
   }
 
-  /*** The base_frame switches need to know where the robot base sits relative to the
-       sensor, and only the robot description knows that. Read lidar_frame -> base_frame
-       from TF once and hand the pipeline T_I_B = T_I_L * T_L_B.
-       Polled on a timer rather than waited for inline, because the description may come up
-       after this node does and blocking here would also block the subscriptions. The
-       pipeline decides what to do in the meantime: origin_at_base and heading_at_base hold
+  /*** Two extrinsics can come out of the robot description rather than the config file,
+       and neither is known until it is up:
+
+         calibration.from_tf   T_I_L, from imu_frame -> lidar_frame
+         the base_frame switches   T_I_B = T_I_L * T_L_B, from lidar_frame -> base_frame
+
+       They resolve in that order, because the second is composed from the first. Polled on
+       a timer rather than waited for inline, because the description may come up after this
+       node does and blocking here would block the subscriptions too. What happens in the
+       meantime is the pipeline's decision: a missing T_I_L stops frames being processed at
+       all (every scan is transformed by it), origin_at_base and heading_at_base hold
        initialisation back (the world frame they define cannot be applied retroactively),
-       odom_in_base only withholds the odometry message. ***/
-  rclcpp::TimerBase::SharedPtr base_extrinsic_timer;
+       and odom_in_base only withholds the odometry message. ***/
+  rclcpp::TimerBase::SharedPtr extrinsic_timer;
   std::unique_ptr<tf2_ros::Buffer> tf_buffer;
   std::shared_ptr<tf2_ros::TransformListener> tf_listener;
-  if (pipeline->needsBaseExtrinsic()) {
+  // Starts as whatever the config gave; replaced by the TF lookup under from_tf. Kept here
+  // as well as in the pipeline because T_I_B is composed from it.
+  bievr::Transform T_I_L = config.pipeline_config.T_I_L;
+
+  if (pipeline->needsBaseExtrinsic() || config.pipeline_config.calibration_from_tf) {
     tf_buffer = std::make_unique<tf2_ros::Buffer>(node->get_clock());
     tf_listener = std::make_shared<tf2_ros::TransformListener>(*tf_buffer, node);
-    base_extrinsic_timer = node->create_wall_timer(200ms, [&]() {
-      if (pipeline->baseExtrinsicValid()) {
-        base_extrinsic_timer->cancel();
-        return;
-      }
-      geometry_msgs::msg::TransformStamped tf_lidar_base;
+
+    // Reads `target -> source` into `out`, reporting (at most every 5 s) why not.
+    const auto lookup = [&](const std::string& target, const std::string& source,
+                            bievr::Transform& out) {
       try {
-        tf_lidar_base = tf_buffer->lookupTransform(config.pipeline_config.lidar_frame,
-                                                   config.pipeline_config.base_frame,
-                                                   tf2::TimePointZero);
+        bievr::msgToTransformStamped(
+            tf_buffer->lookupTransform(target, source, tf2::TimePointZero), out);
       } catch (const tf2::TransformException& e) {
-        LOG_TIMED(W, 5.0,
-                  "Waiting for " << config.pipeline_config.lidar_frame << " -> "
-                                 << config.pipeline_config.base_frame << ": " << e.what());
-        return;
+        LOG_TIMED(W, 5.0, "Waiting for " << target << " -> " << source << ": " << e.what());
+        return false;
       }
-      bievr::Transform T_L_B;
-      bievr::msgToTransformStamped(tf_lidar_base, T_L_B);
-      const bievr::Transform T_I_B(
-          Eigen::Isometry3d(config.pipeline_config.T_I_L * T_L_B));
-      pipeline->setBaseExtrinsic(T_I_B);
-      LOG(I, "Resolved " << config.pipeline_config.base_frame << " in IMU coordinates: t = ["
-                         << T_I_B.translation().transpose() << "].");
-      base_extrinsic_timer->cancel();
+      return true;
+    };
+
+    extrinsic_timer = node->create_wall_timer(200ms, [&]() {
+      if (config.pipeline_config.calibration_from_tf && !pipeline->lidarExtrinsicValid()) {
+        if (!lookup(config.pipeline_config.body_frame, config.pipeline_config.lidar_frame,
+                    T_I_L)) {
+          return;
+        }
+        pipeline->setLidarExtrinsic(T_I_L);
+        LOG(I, "Resolved the LiDAR-IMU extrinsic from TF ("
+                   << config.pipeline_config.body_frame << " -> "
+                   << config.pipeline_config.lidar_frame << "): t = ["
+                   << T_I_L.translation().transpose() << "].");
+      }
+
+      if (pipeline->needsBaseExtrinsic() && !pipeline->baseExtrinsicValid()) {
+        bievr::Transform T_L_B;
+        if (!lookup(config.pipeline_config.lidar_frame, config.pipeline_config.base_frame,
+                    T_L_B)) {
+          return;
+        }
+        const bievr::Transform T_I_B(Eigen::Isometry3d(T_I_L * T_L_B));
+        pipeline->setBaseExtrinsic(T_I_B);
+        LOG(I, "Resolved " << config.pipeline_config.base_frame << " in IMU coordinates: t = ["
+                           << T_I_B.translation().transpose() << "].");
+      }
+
+      extrinsic_timer->cancel();
     });
   }
 

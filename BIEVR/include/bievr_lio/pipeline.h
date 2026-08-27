@@ -27,6 +27,12 @@ class Pipeline {
     // Path to the ASCII art shown at the top of the dashboard (e.g. bievr_ascii.txt).
     std::string dashboard_ascii_path = "";
     Transform T_I_L = Transform::Identity();  // Transform from LiDAR to IMU frame
+    /*** Read T_I_L from TF (imu_frame -> lidar_frame) at startup instead of taking it from
+         the config. The offset between the two is a property of the sensor, so a robot
+         description that already models both links is a better home for it than a second
+         copy here that nothing checks against the first. Off by default: a bag replay has
+         no live TF tree, and the explicit vectors stay mandatory when it is off. ***/
+    bool calibration_from_tf = false;
     /*** TF frame names. map_frame is the world-fixed parent of the published odometry and
          clouds; body_frame is the IMU, which is what the filter actually estimates.
          lidar_frame and base_frame name links this node never estimates but has to be able
@@ -81,6 +87,13 @@ class Pipeline {
   // withholds the odometry message.
   void setBaseExtrinsic(const Transform& T_I_B);
   bool baseExtrinsicValid() const { return base_extrinsic_valid_; }
+
+  // The LiDAR-IMU extrinsic, when calibration_from_tf asked for it to come from TF rather
+  // than from the config. Overwrites Config::T_I_L, which is the identity until it lands --
+  // hence the gate in processFrame: every scan is transformed by it, so no frame may be
+  // processed before it arrives.
+  void setLidarExtrinsic(const Transform& T_I_L);
+  bool lidarExtrinsicValid() const { return !config_.calibration_from_tf || lidar_extrinsic_valid_; }
   // Whether anything that is enabled actually needs the extrinsic above.
   bool needsBaseExtrinsic() const {
     return config_.odom_in_base || config_.origin_at_base || config_.heading_at_base;
@@ -152,6 +165,7 @@ class Pipeline {
   // base_frame expressed in IMU coordinates, see setBaseExtrinsic.
   Transform T_I_B_ = Transform::Identity();
   bool base_extrinsic_valid_ = false;
+  bool lidar_extrinsic_valid_ = false;
   // Latest gyro reading, used to report the angular velocity in the odometry twist.
   V3 latest_gyro_ = V3::Zero();
   // Accelerometer scale resolved during bias estimation (1 if raw, g if the IMU

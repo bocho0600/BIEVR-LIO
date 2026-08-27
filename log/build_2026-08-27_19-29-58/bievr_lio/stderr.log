@@ -1,0 +1,111 @@
+CMake Warning at /nix/store/k1b82rs72af124wmq6nb00nhw5i7ikp7-cmake-4.1.2/share/cmake-4.1/Modules/FindBLAS.cmake:1359 (find_package):
+  By not providing "Findnvpl.cmake" in CMAKE_MODULE_PATH this project has
+  asked CMake to find a package configuration file provided by "nvpl", but
+  CMake did not find one.
+
+  Could not find a package configuration file provided by "nvpl" with any of
+  the following names:
+
+    nvplConfig.cmake
+    nvpl-config.cmake
+
+  Add the installation prefix of "nvpl" to CMAKE_PREFIX_PATH or set
+  "nvpl_DIR" to a directory containing one of the above files.  If "nvpl"
+  provides a separate development package or SDK, be sure it has been
+  installed.
+Call Stack (most recent call first):
+  /nix/store/k1wbmi5va8pkzgh6jnw61i5l7gxxq7pp-ceres-solver-2.1.0-dev/lib/cmake/Ceres/FindSuiteSparse.cmake:288 (find_package)
+  /nix/store/k1b82rs72af124wmq6nb00nhw5i7ikp7-cmake-4.1.2/share/cmake-4.1/Modules/CMakeFindDependencyMacro.cmake:78 (find_package)
+  /nix/store/k1wbmi5va8pkzgh6jnw61i5l7gxxq7pp-ceres-solver-2.1.0-dev/lib/cmake/Ceres/CeresConfig.cmake:183 (find_dependency)
+  CMakeLists.txt:24 (find_package)
+
+
+CMake Warning at /nix/store/k1b82rs72af124wmq6nb00nhw5i7ikp7-cmake-4.1.2/share/cmake-4.1/Modules/FindBLAS.cmake:1359 (find_package):
+  By not providing "Findnvpl.cmake" in CMAKE_MODULE_PATH this project has
+  asked CMake to find a package configuration file provided by "nvpl", but
+  CMake did not find one.
+
+  Could not find a package configuration file provided by "nvpl" with any of
+  the following names:
+
+    nvplConfig.cmake
+    nvpl-config.cmake
+
+  Add the installation prefix of "nvpl" to CMAKE_PREFIX_PATH or set
+  "nvpl_DIR" to a directory containing one of the above files.  If "nvpl"
+  provides a separate development package or SDK, be sure it has been
+  installed.
+Call Stack (most recent call first):
+  /nix/store/k1b82rs72af124wmq6nb00nhw5i7ikp7-cmake-4.1.2/share/cmake-4.1/Modules/FindLAPACK.cmake:262 (find_package)
+  /nix/store/k1b82rs72af124wmq6nb00nhw5i7ikp7-cmake-4.1.2/share/cmake-4.1/Modules/FindLAPACK.cmake:308 (_lapack_find_dependency)
+  /nix/store/k1wbmi5va8pkzgh6jnw61i5l7gxxq7pp-ceres-solver-2.1.0-dev/lib/cmake/Ceres/FindSuiteSparse.cmake:295 (find_package)
+  /nix/store/k1b82rs72af124wmq6nb00nhw5i7ikp7-cmake-4.1.2/share/cmake-4.1/Modules/CMakeFindDependencyMacro.cmake:78 (find_package)
+  /nix/store/k1wbmi5va8pkzgh6jnw61i5l7gxxq7pp-ceres-solver-2.1.0-dev/lib/cmake/Ceres/CeresConfig.cmake:183 (find_dependency)
+  CMakeLists.txt:24 (find_package)
+
+
+In file included from /home/bocho0600/roar/BIEVR-LIO/BIEVR/src/timing.cpp:30:
+/home/bocho0600/roar/BIEVR-LIO/BIEVR/include/bievr_lio/log++.h:533:9: warning: ‘DLOG_FIRST_N’ redefined
+  533 | #define DLOG_FIRST_N(severity, n) LPP_WARN("DLOG_FIRST_N is a Log++ extension"); LPP_ASSERT_GLOG(LPP_INTL::GlogSeverity::severity); \
+      |         ^~~~~~~~~~~~
+In file included from /home/bocho0600/roar/BIEVR-LIO/BIEVR/include/bievr_lio/log++.h:80:
+/nix/store/cr54cdl7rkjh13pyhf22i9spm349lsvr-glog-0.7.1/include/glog/logging.h:1116:11: note: this is the location of the previous definition
+ 1116 | #  define DLOG_FIRST_N(severity, n) \
+      |           ^~~~~~~~~~~~
+In file included from /home/bocho0600/roar/BIEVR-LIO/BIEVR/src/imu_integrator.cpp:7:
+/home/bocho0600/roar/BIEVR-LIO/BIEVR/include/bievr_lio/log++.h:533:9: warning: ‘DLOG_FIRST_N’ redefined
+  533 | #define DLOG_FIRST_N(severity, n) LPP_WARN("DLOG_FIRST_N is a Log++ extension"); LPP_ASSERT_GLOG(LPP_INTL::GlogSeverity::severity); \
+      |         ^~~~~~~~~~~~
+In file included from /home/bocho0600/roar/BIEVR-LIO/BIEVR/include/bievr_lio/log++.h:80:
+/nix/store/cr54cdl7rkjh13pyhf22i9spm349lsvr-glog-0.7.1/include/glog/logging.h:1116:11: note: this is the location of the previous definition
+ 1116 | #  define DLOG_FIRST_N(severity, n) \
+      |           ^~~~~~~~~~~~
+In file included from /home/bocho0600/roar/BIEVR-LIO/BIEVR/src/bievr_map.cpp:9:
+/home/bocho0600/roar/BIEVR-LIO/BIEVR/include/bievr_lio/log++.h:533:9: warning: ‘DLOG_FIRST_N’ redefined
+  533 | #define DLOG_FIRST_N(severity, n) LPP_WARN("DLOG_FIRST_N is a Log++ extension"); LPP_ASSERT_GLOG(LPP_INTL::GlogSeverity::severity); \
+      |         ^~~~~~~~~~~~
+In file included from /home/bocho0600/roar/BIEVR-LIO/BIEVR/include/bievr_lio/log++.h:80:
+/nix/store/cr54cdl7rkjh13pyhf22i9spm349lsvr-glog-0.7.1/include/glog/logging.h:1116:11: note: this is the location of the previous definition
+ 1116 | #  define DLOG_FIRST_N(severity, n) \
+      |           ^~~~~~~~~~~~
+In file included from /home/bocho0600/roar/BIEVR-LIO/BIEVR/include/bievr_lio/pipeline.h:8,
+                 from /home/bocho0600/roar/BIEVR-LIO/BIEVR/include/bievr_lio/synchronizer.h:6,
+                 from /home/bocho0600/roar/BIEVR-LIO/BIEVR/src/synchronizer.cpp:1:
+/home/bocho0600/roar/BIEVR-LIO/BIEVR/include/bievr_lio/log++.h:533:9: warning: ‘DLOG_FIRST_N’ redefined
+  533 | #define DLOG_FIRST_N(severity, n) LPP_WARN("DLOG_FIRST_N is a Log++ extension"); LPP_ASSERT_GLOG(LPP_INTL::GlogSeverity::severity); \
+      |         ^~~~~~~~~~~~
+In file included from /home/bocho0600/roar/BIEVR-LIO/BIEVR/include/bievr_lio/log++.h:80:
+/nix/store/cr54cdl7rkjh13pyhf22i9spm349lsvr-glog-0.7.1/include/glog/logging.h:1116:11: note: this is the location of the previous definition
+ 1116 | #  define DLOG_FIRST_N(severity, n) \
+      |           ^~~~~~~~~~~~
+In file included from /home/bocho0600/roar/BIEVR-LIO/BIEVR/src/ls_optimizer.cpp:9:
+/home/bocho0600/roar/BIEVR-LIO/BIEVR/include/bievr_lio/log++.h:533:9: warning: ‘DLOG_FIRST_N’ redefined
+  533 | #define DLOG_FIRST_N(severity, n) LPP_WARN("DLOG_FIRST_N is a Log++ extension"); LPP_ASSERT_GLOG(LPP_INTL::GlogSeverity::severity); \
+      |         ^~~~~~~~~~~~
+In file included from /home/bocho0600/roar/BIEVR-LIO/BIEVR/include/bievr_lio/log++.h:80:
+/nix/store/cr54cdl7rkjh13pyhf22i9spm349lsvr-glog-0.7.1/include/glog/logging.h:1116:11: note: this is the location of the previous definition
+ 1116 | #  define DLOG_FIRST_N(severity, n) \
+      |           ^~~~~~~~~~~~
+In file included from /home/bocho0600/roar/BIEVR-LIO/BIEVR/src/inertial_factor.cpp:3:
+/home/bocho0600/roar/BIEVR-LIO/BIEVR/include/bievr_lio/log++.h:533:9: warning: ‘DLOG_FIRST_N’ redefined
+  533 | #define DLOG_FIRST_N(severity, n) LPP_WARN("DLOG_FIRST_N is a Log++ extension"); LPP_ASSERT_GLOG(LPP_INTL::GlogSeverity::severity); \
+      |         ^~~~~~~~~~~~
+In file included from /nix/store/k1wbmi5va8pkzgh6jnw61i5l7gxxq7pp-ceres-solver-2.1.0-dev/include/ceres/internal/fixed_array.h:42,
+                 from /nix/store/k1wbmi5va8pkzgh6jnw61i5l7gxxq7pp-ceres-solver-2.1.0-dev/include/ceres/internal/array_selector.h:38,
+                 from /nix/store/k1wbmi5va8pkzgh6jnw61i5l7gxxq7pp-ceres-solver-2.1.0-dev/include/ceres/internal/autodiff.h:147,
+                 from /nix/store/k1wbmi5va8pkzgh6jnw61i5l7gxxq7pp-ceres-solver-2.1.0-dev/include/ceres/autodiff_cost_function.h:130,
+                 from /nix/store/k1wbmi5va8pkzgh6jnw61i5l7gxxq7pp-ceres-solver-2.1.0-dev/include/ceres/ceres.h:37,
+                 from /home/bocho0600/roar/BIEVR-LIO/BIEVR/include/bievr_lio/inertial_factor.h:4,
+                 from /home/bocho0600/roar/BIEVR-LIO/BIEVR/src/inertial_factor.cpp:1:
+/nix/store/cr54cdl7rkjh13pyhf22i9spm349lsvr-glog-0.7.1/include/glog/logging.h:1116:11: note: this is the location of the previous definition
+ 1116 | #  define DLOG_FIRST_N(severity, n) \
+      |           ^~~~~~~~~~~~
+In file included from /home/bocho0600/roar/BIEVR-LIO/BIEVR/include/bievr_lio/pipeline.h:8,
+                 from /home/bocho0600/roar/BIEVR-LIO/BIEVR/src/pipeline.cpp:1:
+/home/bocho0600/roar/BIEVR-LIO/BIEVR/include/bievr_lio/log++.h:533:9: warning: ‘DLOG_FIRST_N’ redefined
+  533 | #define DLOG_FIRST_N(severity, n) LPP_WARN("DLOG_FIRST_N is a Log++ extension"); LPP_ASSERT_GLOG(LPP_INTL::GlogSeverity::severity); \
+      |         ^~~~~~~~~~~~
+In file included from /home/bocho0600/roar/BIEVR-LIO/BIEVR/include/bievr_lio/log++.h:80:
+/nix/store/cr54cdl7rkjh13pyhf22i9spm349lsvr-glog-0.7.1/include/glog/logging.h:1116:11: note: this is the location of the previous definition
+ 1116 | #  define DLOG_FIRST_N(severity, n) \
+      |           ^~~~~~~~~~~~

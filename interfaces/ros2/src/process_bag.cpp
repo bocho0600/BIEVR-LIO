@@ -55,12 +55,13 @@ int main(int argc, char** argv) {
   /*** The base_frame switches need lidar_frame -> base_frame from a live TF tree, which
        nothing publishes during a bag replay. Say so rather than sitting silently at a
        "waiting for the transform" that will never arrive. ***/
-  if (pipeline->needsBaseExtrinsic()) {
+  if (pipeline->needsBaseExtrinsic() || config.pipeline_config.calibration_from_tf) {
     LOG(W,
-        "The `base` switches (odom_in_base / origin_at_base / heading_at_base) need "
-        "lidar_frame -> base_frame from TF, which is not available when replaying a bag. "
-        "Turn them off for bag processing, or use process_topics with a robot description "
-        "running.");
+        "The `base` switches (odom_in_base / origin_at_base / heading_at_base) and "
+        "calibration.from_tf all read the robot description out of a live TF tree, which a "
+        "bag replay does not have. Turn them off for bag processing -- with from_tf off the "
+        "calibration section needs its explicit translation and rotation back -- or use "
+        "process_topics with the description running.");
   }
 
   rosbag2_cpp::Reader reader;

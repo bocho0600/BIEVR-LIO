@@ -204,7 +204,11 @@ inline void printConfigOverview(const Config& config) {
   }
   os << "  log_path:             " << (hc.log_path.empty() ? "<none>" : hc.log_path) << "\n";
   os << "calibration (LiDAR -> IMU):\n";
-  printExtrinsic(os, "T_I_L", hc.T_I_L);
+  if (config.pipeline_config.calibration_from_tf) {
+    os << "  from_tf:              true (" << hc.body_frame << " -> " << hc.lidar_frame << ")\n";
+  } else {
+    printExtrinsic(os, "T_I_L", hc.T_I_L);
+  }
   os << "==================================================";
   LOG(I, os.str());
 }
@@ -342,10 +346,23 @@ inline bool loadConfigFromYaml(const std::vector<std::string>& yaml_paths, Confi
   LOG_SET_LEVEL(hc.print_debug ? BaseSeverity::DEBUG : BaseSeverity::INFO);
 
   // --- calibration (LiDAR -> IMU) ---
-  if (!config_internal::extrinsicFromVectors(
+  // Either given here as vectors, or read from TF at startup as imu.frame -> lidar.frame.
+  // The vectors stay mandatory in the first case: a missing or half-written extrinsic is a
+  // hard error rather than a silent identity.
+  hc.calibration_from_tf = yaml.get<bool>("calibration", "from_tf", hc.calibration_from_tf);
+  if (!hc.calibration_from_tf &&
+      !config_internal::extrinsicFromVectors(
           yaml.get<std::vector<double>>("calibration", "translation", {}),
           yaml.get<std::vector<double>>("calibration", "rotation", {}), "calibration", hc.T_I_L)) {
     return false;
+  }
+  if (hc.calibration_from_tf && hc.publish_tf_lidar) {
+    LOG(W,
+        "publish.tf_lidar with calibration.from_tf: the "
+            << hc.body_frame << " -> " << hc.lidar_frame
+            << " transform is being read from TF, so broadcasting it back would put two "
+               "publishers on the edge this node depends on. Not broadcasting it.");
+    hc.publish_tf_lidar = false;
   }
 
   // --- threading (top-level, process-wide) ---
