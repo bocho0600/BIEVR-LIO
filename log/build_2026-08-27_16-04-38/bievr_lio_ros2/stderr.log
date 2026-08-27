@@ -1,0 +1,90 @@
+CMake Warning at /nix/store/k1b82rs72af124wmq6nb00nhw5i7ikp7-cmake-4.1.2/share/cmake-4.1/Modules/FindBLAS.cmake:1359 (find_package):
+  By not providing "Findnvpl.cmake" in CMAKE_MODULE_PATH this project has
+  asked CMake to find a package configuration file provided by "nvpl", but
+  CMake did not find one.
+
+  Could not find a package configuration file provided by "nvpl" with any of
+  the following names:
+
+    nvplConfig.cmake
+    nvpl-config.cmake
+
+  Add the installation prefix of "nvpl" to CMAKE_PREFIX_PATH or set
+  "nvpl_DIR" to a directory containing one of the above files.  If "nvpl"
+  provides a separate development package or SDK, be sure it has been
+  installed.
+Call Stack (most recent call first):
+  /nix/store/k1wbmi5va8pkzgh6jnw61i5l7gxxq7pp-ceres-solver-2.1.0-dev/lib/cmake/Ceres/FindSuiteSparse.cmake:288 (find_package)
+  /nix/store/k1b82rs72af124wmq6nb00nhw5i7ikp7-cmake-4.1.2/share/cmake-4.1/Modules/CMakeFindDependencyMacro.cmake:78 (find_package)
+  /nix/store/k1wbmi5va8pkzgh6jnw61i5l7gxxq7pp-ceres-solver-2.1.0-dev/lib/cmake/Ceres/CeresConfig.cmake:183 (find_dependency)
+  /nix/store/k1b82rs72af124wmq6nb00nhw5i7ikp7-cmake-4.1.2/share/cmake-4.1/Modules/CMakeFindDependencyMacro.cmake:78 (find_package)
+  /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/lib64/cmake/bievr_lio/bievr_lioConfig.cmake:43 (find_dependency)
+  CMakeLists.txt:30 (find_package)
+
+
+CMake Warning at /nix/store/k1b82rs72af124wmq6nb00nhw5i7ikp7-cmake-4.1.2/share/cmake-4.1/Modules/FindBLAS.cmake:1359 (find_package):
+  By not providing "Findnvpl.cmake" in CMAKE_MODULE_PATH this project has
+  asked CMake to find a package configuration file provided by "nvpl", but
+  CMake did not find one.
+
+  Could not find a package configuration file provided by "nvpl" with any of
+  the following names:
+
+    nvplConfig.cmake
+    nvpl-config.cmake
+
+  Add the installation prefix of "nvpl" to CMAKE_PREFIX_PATH or set
+  "nvpl_DIR" to a directory containing one of the above files.  If "nvpl"
+  provides a separate development package or SDK, be sure it has been
+  installed.
+Call Stack (most recent call first):
+  /nix/store/k1b82rs72af124wmq6nb00nhw5i7ikp7-cmake-4.1.2/share/cmake-4.1/Modules/FindLAPACK.cmake:262 (find_package)
+  /nix/store/k1b82rs72af124wmq6nb00nhw5i7ikp7-cmake-4.1.2/share/cmake-4.1/Modules/FindLAPACK.cmake:308 (_lapack_find_dependency)
+  /nix/store/k1wbmi5va8pkzgh6jnw61i5l7gxxq7pp-ceres-solver-2.1.0-dev/lib/cmake/Ceres/FindSuiteSparse.cmake:295 (find_package)
+  /nix/store/k1b82rs72af124wmq6nb00nhw5i7ikp7-cmake-4.1.2/share/cmake-4.1/Modules/CMakeFindDependencyMacro.cmake:78 (find_package)
+  /nix/store/k1wbmi5va8pkzgh6jnw61i5l7gxxq7pp-ceres-solver-2.1.0-dev/lib/cmake/Ceres/CeresConfig.cmake:183 (find_dependency)
+  /nix/store/k1b82rs72af124wmq6nb00nhw5i7ikp7-cmake-4.1.2/share/cmake-4.1/Modules/CMakeFindDependencyMacro.cmake:78 (find_package)
+  /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/lib64/cmake/bievr_lio/bievr_lioConfig.cmake:43 (find_dependency)
+  CMakeLists.txt:30 (find_package)
+
+
+In file included from /home/bocho0600/roar/BIEVR-LIO/interfaces/ros2/src/process_topics.cpp:18:
+/tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/config_loader.h:1:3: error: ‘os’ does not name a type
+    1 |   os << "  qos_reliable:         " << yn(tc.qos_reliable) << "\n";
+      |   ^~
+/tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/config_loader.h:2:3: error: ‘os’ does not name a type
+    2 |   os << "  pointcloud_depth:     " << tc.pointcloud_queue_depth << "\n";
+      |   ^~
+/tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/config_loader.h:3:3: error: ‘os’ does not name a type
+    3 |   os << "  imu_depth:            " << tc.imu_queue_depth << "\n";
+      |   ^~
+/tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/config_loader.h:4:3: error: ‘tc’ does not name a type; did you mean ‘tm’?
+    4 |   tc.qos_reliable = yaml.get<bool>("topics", "qos_reliable", tc.qos_reliable);
+      |   ^~
+      |   tm
+/tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/config_loader.h:5:3: error: expected unqualified-id before ‘if’
+    5 |   if (!config_internal::getPositive(yaml, "topics", "pointcloud_queue_depth", 20,
+      |   ^~
+In file included from /home/bocho0600/roar/BIEVR-LIO/interfaces/ros2/src/process_bag.cpp:16:
+/tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/config_loader.h:1:3: error: ‘os’ does not name a type
+    1 |   os << "  qos_reliable:         " << yn(tc.qos_reliable) << "\n";
+      |   ^~
+/tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/config_loader.h:2:3: error: ‘os’ does not name a type
+    2 |   os << "  pointcloud_depth:     " << tc.pointcloud_queue_depth << "\n";
+      |   ^~
+/tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/config_loader.h:3:3: error: ‘os’ does not name a type
+    3 |   os << "  imu_depth:            " << tc.imu_queue_depth << "\n";
+      |   ^~
+/tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/config_loader.h:4:3: error: ‘tc’ does not name a type; did you mean ‘tm’?
+    4 |   tc.qos_reliable = yaml.get<bool>("topics", "qos_reliable", tc.qos_reliable);
+      |   ^~
+      |   tm
+/tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/config_loader.h:5:3: error: expected unqualified-id before ‘if’
+    5 |   if (!config_internal::getPositive(yaml, "topics", "pointcloud_queue_depth", 20,
+      |   ^~
+gmake[2]: *** [CMakeFiles/process_bag.dir/build.make:79: CMakeFiles/process_bag.dir/src/process_bag.cpp.o] Error 1
+gmake[1]: *** [CMakeFiles/Makefile2:188: CMakeFiles/process_bag.dir/all] Error 2
+gmake[1]: *** Waiting for unfinished jobs....
+gmake[2]: *** [CMakeFiles/process_topics.dir/build.make:79: CMakeFiles/process_topics.dir/src/process_topics.cpp.o] Error 1
+gmake[1]: *** [CMakeFiles/Makefile2:156: CMakeFiles/process_topics.dir/all] Error 2
+gmake: *** [Makefile:146: all] Error 2

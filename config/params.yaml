@@ -15,6 +15,19 @@ preprocess:
 optimization:
   huber_delta: 0.1 # Huber norm threshold
 
+# Sensor-config files own the topic names; these are how they are subscribed to.
+topics:
+  # false = best-effort. Best-effort is compatible with reliable publishers too, and is the
+  # right default for live sensor data: a lost scan costs one update, a late scan drags the
+  # estimate behind reality. Set true when the publisher is across a link that loses
+  # fragments -- a MID-360 PointCloud2 is around half a megabyte, so UDP splits it into
+  # hundreds of datagrams and losing one discards the whole scan.
+  qos_reliable: false
+  pointcloud_queue_depth: 20
+  # 200 samples is a full second at 200 Hz. The sensor-data default of 5 is 25 ms, short
+  # enough that any stall in the callback thread costs samples the de-skewing needs.
+  imu_queue_depth: 200
+
 imu:
     window_s: 10 # Time window for the inertial optimization [s]
     t_init: 0.2 # Time to initialize bias and gravity [s]

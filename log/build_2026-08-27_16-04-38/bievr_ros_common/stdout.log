@@ -1,0 +1,45 @@
+-- The CXX compiler identification is GNU 15.2.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /nix/store/xcnqqnhw9hb4j5rjgds2yjryi8qki5f3-gcc-wrapper-15.2.0/bin/g++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE
+-- Found CXSparse: /nix/store/p6if5qx3k8skshkb380mh1ps5d0pw6vc-suitesparse-5.13.0-dev/include (found suitable version "3.2.0", minimum required is "3.2.0")
+-- Found AMD headers in: /nix/store/p6if5qx3k8skshkb380mh1ps5d0pw6vc-suitesparse-5.13.0-dev/include
+-- Found AMD library: /nix/store/q27a1rbgkbdjnc84phqmla2131ll53rz-suitesparse-5.13.0/lib/libamd.so
+-- Found CAMD headers in: /nix/store/p6if5qx3k8skshkb380mh1ps5d0pw6vc-suitesparse-5.13.0-dev/include
+-- Found CAMD library: /nix/store/q27a1rbgkbdjnc84phqmla2131ll53rz-suitesparse-5.13.0/lib/libcamd.so
+-- Found CCOLAMD headers in: /nix/store/p6if5qx3k8skshkb380mh1ps5d0pw6vc-suitesparse-5.13.0-dev/include
+-- Found CCOLAMD library: /nix/store/q27a1rbgkbdjnc84phqmla2131ll53rz-suitesparse-5.13.0/lib/libccolamd.so
+-- Found CHOLMOD headers in: /nix/store/p6if5qx3k8skshkb380mh1ps5d0pw6vc-suitesparse-5.13.0-dev/include
+-- Found CHOLMOD library: /nix/store/q27a1rbgkbdjnc84phqmla2131ll53rz-suitesparse-5.13.0/lib/libcholmod.so
+-- Found COLAMD headers in: /nix/store/p6if5qx3k8skshkb380mh1ps5d0pw6vc-suitesparse-5.13.0-dev/include
+-- Found COLAMD library: /nix/store/q27a1rbgkbdjnc84phqmla2131ll53rz-suitesparse-5.13.0/lib/libcolamd.so
+-- Found SPQR headers in: /nix/store/p6if5qx3k8skshkb380mh1ps5d0pw6vc-suitesparse-5.13.0-dev/include
+-- Found SPQR library: /nix/store/q27a1rbgkbdjnc84phqmla2131ll53rz-suitesparse-5.13.0/lib/libspqr.so
+-- Found Config headers in: /nix/store/p6if5qx3k8skshkb380mh1ps5d0pw6vc-suitesparse-5.13.0-dev/include
+-- Found Config library: /nix/store/q27a1rbgkbdjnc84phqmla2131ll53rz-suitesparse-5.13.0/lib/libsuitesparseconfig.so
+-- Found Intel Thread Building Blocks (TBB) library (2022.3 / ) include location: . Assuming SuiteSparseQR was compiled with TBB.
+-- Looking for shm_open in rt
+-- Looking for shm_open in rt - found
+-- Adding librt to SuiteSparse_config libraries (required on Linux & Unix [not OSX] if SuiteSparse is compiled with timing).
+-- Found METIS: /nix/store/73j0ny8fznx3ixxlb7415dsajqgg20s4-metis-5.2.1/include (found version "5.2.1")
+-- Found SuiteSparse: /nix/store/p6if5qx3k8skshkb380mh1ps5d0pw6vc-suitesparse-5.13.0-dev/include (found suitable version "5.13.0", minimum required is "5.13.0") found components: AMD CAMD CCOLAMD CHOLMOD COLAMD SPQR Config
+-- Found required Ceres dependency: Eigen version 3.4.1 in /nix/store/d08vaglnb83g7nrdjfrxfdkw8rrx3rba-eigen-3.4.1/share/eigen3/cmake
+-- Found required Ceres dependency: glog
+-- Found required Ceres dependency: gflags
+-- Found Ceres version: 2.1.0 installed in: / with components: [EigenSparse, SparseLinearAlgebraLibrary, LAPACK, SuiteSparse, CXSparse, SchurSpecializations, Multithreading]
+-- Configuring done (22.4s)
+-- Generating done (0.0s)
+-- Build files have been written to: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_build/bievr_ros_common
+-- Install configuration: "Release"
+-- Installing: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_ros_common/include
+-- Installing: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_ros_common/include/bievr_ros_common
+-- Installing: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_ros_common/include/bievr_ros_common/publisher_base.h
+-- Installing: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_ros_common/include/bievr_ros_common/conversions.h
+-- Installing: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_ros_common/lib64/cmake/bievr_ros_common/bievr_ros_commonTargets.cmake
+-- Installing: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_ros_common/lib64/cmake/bievr_ros_common/bievr_ros_commonConfig.cmake
+-- Installing: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_ros_common/lib64/cmake/bievr_ros_common/bievr_ros_commonConfigVersion.cmake

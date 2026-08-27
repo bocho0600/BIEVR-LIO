@@ -15,6 +15,11 @@ class Synchronizer {
   bool addPointcloud(const StampedIntensityPointcloud& cloud);
 
  private:
+  // Upper bounds on how much unpaired data each queue holds; see dropOldest in the .cpp.
+  // 20 s of IMU at 200 Hz, and 20 s of scans at 10 Hz.
+  static constexpr size_t kMaxImuQueue = 4000;
+  static constexpr size_t kMaxPointQueue = 200;
+
   void synchronizeData();
   std::deque<ImuMeasurement> imu_queue_;
   std::deque<StampedIntensityPointcloud> point_queue_;

@@ -1,0 +1,185 @@
+-- The C compiler identification is GNU 15.2.0
+-- The CXX compiler identification is GNU 15.2.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /nix/store/xcnqqnhw9hb4j5rjgds2yjryi8qki5f3-gcc-wrapper-15.2.0/bin/gcc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /nix/store/xcnqqnhw9hb4j5rjgds2yjryi8qki5f3-gcc-wrapper-15.2.0/bin/g++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found ament_cmake: 2.5.6 (/nix/store/1gydyyswnqd3a5l14c1gx1d4kfl66ypp-ros-jazzy-dev-shell-env/share/ament_cmake/cmake)
+-- Found Python3: /nix/store/1gydyyswnqd3a5l14c1gx1d4kfl66ypp-ros-jazzy-dev-shell-env/bin/python3 (found version "3.13.13") found components: Interpreter
+-- Found rclcpp: 28.1.21 (/nix/store/1gydyyswnqd3a5l14c1gx1d4kfl66ypp-ros-jazzy-dev-shell-env/share/rclcpp/cmake)
+-- Found rosidl_generator_c: 4.6.9 (/nix/store/1gydyyswnqd3a5l14c1gx1d4kfl66ypp-ros-jazzy-dev-shell-env/share/rosidl_generator_c/cmake)
+-- Found rosidl_generator_cpp: 4.6.9 (/nix/store/1gydyyswnqd3a5l14c1gx1d4kfl66ypp-ros-jazzy-dev-shell-env/share/rosidl_generator_cpp/cmake)
+-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+-- Found rmw_implementation_cmake: 7.3.3 (/nix/store/1gydyyswnqd3a5l14c1gx1d4kfl66ypp-ros-jazzy-dev-shell-env/share/rmw_implementation_cmake/cmake)
+-- Found rmw_cyclonedds_cpp: 2.2.3 (/nix/store/1gydyyswnqd3a5l14c1gx1d4kfl66ypp-ros-jazzy-dev-shell-env/share/rmw_cyclonedds_cpp/cmake)
+-- Using RMW implementation 'rmw_cyclonedds_cpp' as default
+-- Found sensor_msgs: 5.3.8 (/nix/store/1gydyyswnqd3a5l14c1gx1d4kfl66ypp-ros-jazzy-dev-shell-env/share/sensor_msgs/cmake)
+-- Found nav_msgs: 5.3.8 (/nix/store/1gydyyswnqd3a5l14c1gx1d4kfl66ypp-ros-jazzy-dev-shell-env/share/nav_msgs/cmake)
+-- Found tf2: 0.36.22 (/nix/store/1gydyyswnqd3a5l14c1gx1d4kfl66ypp-ros-jazzy-dev-shell-env/share/tf2/cmake)
+-- Found tf2_ros: 0.36.22 (/nix/store/1gydyyswnqd3a5l14c1gx1d4kfl66ypp-ros-jazzy-dev-shell-env/share/tf2_ros/cmake)
+-- Found rosbag2_cpp: 0.26.11 (/nix/store/1gydyyswnqd3a5l14c1gx1d4kfl66ypp-ros-jazzy-dev-shell-env/share/rosbag2_cpp/cmake)
+-- Found TinyXML2 via Config file: /nix/store/pkhfl2wyximd6d5w17ird1qcnr7pj095-tinyxml2-11.0.0/lib/cmake/tinyxml2
+-- Setting yaml-cpp_DIR to: '/nix/store/1gydyyswnqd3a5l14c1gx1d4kfl66ypp-ros-jazzy-dev-shell-env/share/yaml_cpp_vendor/cmake/../../../opt/yaml_cpp_vendor/share/cmake/yaml-cpp'
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE
+-- Found CXSparse: /nix/store/p6if5qx3k8skshkb380mh1ps5d0pw6vc-suitesparse-5.13.0-dev/include (found suitable version "3.2.0", minimum required is "3.2.0")
+CMake Warning at /nix/store/k1b82rs72af124wmq6nb00nhw5i7ikp7-cmake-4.1.2/share/cmake-4.1/Modules/FindBLAS.cmake:1359 (find_package):
+  By not providing "Findnvpl.cmake" in CMAKE_MODULE_PATH this project has
+  asked CMake to find a package configuration file provided by "nvpl", but
+  CMake did not find one.
+
+  Could not find a package configuration file provided by "nvpl" with any of
+  the following names:
+
+    nvplConfig.cmake
+    nvpl-config.cmake
+
+  Add the installation prefix of "nvpl" to CMAKE_PREFIX_PATH or set
+  "nvpl_DIR" to a directory containing one of the above files.  If "nvpl"
+  provides a separate development package or SDK, be sure it has been
+  installed.
+Call Stack (most recent call first):
+  /nix/store/k1wbmi5va8pkzgh6jnw61i5l7gxxq7pp-ceres-solver-2.1.0-dev/lib/cmake/Ceres/FindSuiteSparse.cmake:288 (find_package)
+  /nix/store/k1b82rs72af124wmq6nb00nhw5i7ikp7-cmake-4.1.2/share/cmake-4.1/Modules/CMakeFindDependencyMacro.cmake:78 (find_package)
+  /nix/store/k1wbmi5va8pkzgh6jnw61i5l7gxxq7pp-ceres-solver-2.1.0-dev/lib/cmake/Ceres/CeresConfig.cmake:183 (find_dependency)
+  /nix/store/k1b82rs72af124wmq6nb00nhw5i7ikp7-cmake-4.1.2/share/cmake-4.1/Modules/CMakeFindDependencyMacro.cmake:78 (find_package)
+  /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/lib64/cmake/bievr_lio/bievr_lioConfig.cmake:43 (find_dependency)
+  CMakeLists.txt:30 (find_package)
+
+
+CMake Warning at /nix/store/k1b82rs72af124wmq6nb00nhw5i7ikp7-cmake-4.1.2/share/cmake-4.1/Modules/FindBLAS.cmake:1359 (find_package):
+  By not providing "Findnvpl.cmake" in CMAKE_MODULE_PATH this project has
+  asked CMake to find a package configuration file provided by "nvpl", but
+  CMake did not find one.
+
+  Could not find a package configuration file provided by "nvpl" with any of
+  the following names:
+
+    nvplConfig.cmake
+    nvpl-config.cmake
+
+  Add the installation prefix of "nvpl" to CMAKE_PREFIX_PATH or set
+  "nvpl_DIR" to a directory containing one of the above files.  If "nvpl"
+  provides a separate development package or SDK, be sure it has been
+  installed.
+Call Stack (most recent call first):
+  /nix/store/k1b82rs72af124wmq6nb00nhw5i7ikp7-cmake-4.1.2/share/cmake-4.1/Modules/FindLAPACK.cmake:262 (find_package)
+  /nix/store/k1b82rs72af124wmq6nb00nhw5i7ikp7-cmake-4.1.2/share/cmake-4.1/Modules/FindLAPACK.cmake:308 (_lapack_find_dependency)
+  /nix/store/k1wbmi5va8pkzgh6jnw61i5l7gxxq7pp-ceres-solver-2.1.0-dev/lib/cmake/Ceres/FindSuiteSparse.cmake:295 (find_package)
+  /nix/store/k1b82rs72af124wmq6nb00nhw5i7ikp7-cmake-4.1.2/share/cmake-4.1/Modules/CMakeFindDependencyMacro.cmake:78 (find_package)
+  /nix/store/k1wbmi5va8pkzgh6jnw61i5l7gxxq7pp-ceres-solver-2.1.0-dev/lib/cmake/Ceres/CeresConfig.cmake:183 (find_dependency)
+  /nix/store/k1b82rs72af124wmq6nb00nhw5i7ikp7-cmake-4.1.2/share/cmake-4.1/Modules/CMakeFindDependencyMacro.cmake:78 (find_package)
+  /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/lib64/cmake/bievr_lio/bievr_lioConfig.cmake:43 (find_dependency)
+  CMakeLists.txt:30 (find_package)
+
+
+-- Found AMD headers in: /nix/store/p6if5qx3k8skshkb380mh1ps5d0pw6vc-suitesparse-5.13.0-dev/include
+-- Found AMD library: /nix/store/q27a1rbgkbdjnc84phqmla2131ll53rz-suitesparse-5.13.0/lib/libamd.so
+-- Found CAMD headers in: /nix/store/p6if5qx3k8skshkb380mh1ps5d0pw6vc-suitesparse-5.13.0-dev/include
+-- Found CAMD library: /nix/store/q27a1rbgkbdjnc84phqmla2131ll53rz-suitesparse-5.13.0/lib/libcamd.so
+-- Found CCOLAMD headers in: /nix/store/p6if5qx3k8skshkb380mh1ps5d0pw6vc-suitesparse-5.13.0-dev/include
+-- Found CCOLAMD library: /nix/store/q27a1rbgkbdjnc84phqmla2131ll53rz-suitesparse-5.13.0/lib/libccolamd.so
+-- Found CHOLMOD headers in: /nix/store/p6if5qx3k8skshkb380mh1ps5d0pw6vc-suitesparse-5.13.0-dev/include
+-- Found CHOLMOD library: /nix/store/q27a1rbgkbdjnc84phqmla2131ll53rz-suitesparse-5.13.0/lib/libcholmod.so
+-- Found COLAMD headers in: /nix/store/p6if5qx3k8skshkb380mh1ps5d0pw6vc-suitesparse-5.13.0-dev/include
+-- Found COLAMD library: /nix/store/q27a1rbgkbdjnc84phqmla2131ll53rz-suitesparse-5.13.0/lib/libcolamd.so
+-- Found SPQR headers in: /nix/store/p6if5qx3k8skshkb380mh1ps5d0pw6vc-suitesparse-5.13.0-dev/include
+-- Found SPQR library: /nix/store/q27a1rbgkbdjnc84phqmla2131ll53rz-suitesparse-5.13.0/lib/libspqr.so
+-- Found Config headers in: /nix/store/p6if5qx3k8skshkb380mh1ps5d0pw6vc-suitesparse-5.13.0-dev/include
+-- Found Config library: /nix/store/q27a1rbgkbdjnc84phqmla2131ll53rz-suitesparse-5.13.0/lib/libsuitesparseconfig.so
+-- Found Intel Thread Building Blocks (TBB) library (2022.3 / ) include location: . Assuming SuiteSparseQR was compiled with TBB.
+-- Looking for shm_open in rt
+-- Looking for shm_open in rt - found
+-- Adding librt to SuiteSparse_config libraries (required on Linux & Unix [not OSX] if SuiteSparse is compiled with timing).
+-- Found METIS: /nix/store/73j0ny8fznx3ixxlb7415dsajqgg20s4-metis-5.2.1/include (found version "5.2.1")
+-- Found SuiteSparse: /nix/store/p6if5qx3k8skshkb380mh1ps5d0pw6vc-suitesparse-5.13.0-dev/include (found suitable version "5.13.0", minimum required is "5.13.0") found components: AMD CAMD CCOLAMD CHOLMOD COLAMD SPQR Config
+-- Found required Ceres dependency: Eigen version 3.4.1 in /nix/store/d08vaglnb83g7nrdjfrxfdkw8rrx3rba-eigen-3.4.1/share/eigen3/cmake
+-- Found required Ceres dependency: glog
+-- Found required Ceres dependency: gflags
+-- Found Ceres version: 2.1.0 installed in: / with components: [EigenSparse, SparseLinearAlgebraLibrary, LAPACK, SuiteSparse, CXSparse, SchurSpecializations, Multithreading]
+-- Found flann version 1.9.2
+-- Found OpenMP_CXX: -fopenmp (found version "4.5")
+-- Found OpenMP: TRUE (found version "4.5") found components: CXX
+-- Could NOT find Pcap (missing: PCAP_LIBRARIES PCAP_INCLUDE_DIRS) 
+-- Found ZLIB: /nix/store/dbz6pb9g67kpgpl95k8d85kzpxm1c32p-zlib-1.3.2/lib/libz.so (found version "1.3.2")
+-- Found PNG: /nix/store/yzv7lxhgkiggw4yyh4i4igpi5jc43bhk-libpng-apng-1.6.58/lib/libpng.so (found version "1.6.58")
+-- Checking for module 'libusb-1.0'
+--   No package 'libusb-1.0' found
+-- Could NOT find libusb (missing: libusb_LIBRARIES libusb_INCLUDE_DIR) 
+-- Found Qhull version 8.0.2
+-- Found PCL_COMMON: /nix/store/sx86ppg1xxhz0bpq46nzmfaans51cccq-pcl-1.15.1/lib/libpcl_common.so
+-- Found PCL_KDTREE: /nix/store/sx86ppg1xxhz0bpq46nzmfaans51cccq-pcl-1.15.1/lib/libpcl_kdtree.so
+-- Found PCL_OCTREE: /nix/store/sx86ppg1xxhz0bpq46nzmfaans51cccq-pcl-1.15.1/lib/libpcl_octree.so
+-- Found PCL_SEARCH: /nix/store/sx86ppg1xxhz0bpq46nzmfaans51cccq-pcl-1.15.1/lib/libpcl_search.so
+-- Found PCL_SAMPLE_CONSENSUS: /nix/store/sx86ppg1xxhz0bpq46nzmfaans51cccq-pcl-1.15.1/lib/libpcl_sample_consensus.so
+-- Found PCL_FILTERS: /nix/store/sx86ppg1xxhz0bpq46nzmfaans51cccq-pcl-1.15.1/lib/libpcl_filters.so
+-- Found PCL_2D: /nix/store/sx86ppg1xxhz0bpq46nzmfaans51cccq-pcl-1.15.1/include/pcl-1.15
+-- Found PCL_GEOMETRY: /nix/store/sx86ppg1xxhz0bpq46nzmfaans51cccq-pcl-1.15.1/include/pcl-1.15
+-- Found PCL_IO_PLY: /nix/store/sx86ppg1xxhz0bpq46nzmfaans51cccq-pcl-1.15.1/lib/libpcl_io_ply.so
+-- Found PCL_IO: /nix/store/sx86ppg1xxhz0bpq46nzmfaans51cccq-pcl-1.15.1/lib/libpcl_io.so
+-- Found PCL_FEATURES: /nix/store/sx86ppg1xxhz0bpq46nzmfaans51cccq-pcl-1.15.1/lib/libpcl_features.so
+-- Found PCL_ML: /nix/store/sx86ppg1xxhz0bpq46nzmfaans51cccq-pcl-1.15.1/lib/libpcl_ml.so
+-- Found PCL_SEGMENTATION: /nix/store/sx86ppg1xxhz0bpq46nzmfaans51cccq-pcl-1.15.1/lib/libpcl_segmentation.so
+-- Found PCL_VISUALIZATION: /nix/store/sx86ppg1xxhz0bpq46nzmfaans51cccq-pcl-1.15.1/lib/libpcl_visualization.so
+-- Found PCL_SURFACE: /nix/store/sx86ppg1xxhz0bpq46nzmfaans51cccq-pcl-1.15.1/lib/libpcl_surface.so
+-- Found PCL_REGISTRATION: /nix/store/sx86ppg1xxhz0bpq46nzmfaans51cccq-pcl-1.15.1/lib/libpcl_registration.so
+-- Found PCL_KEYPOINTS: /nix/store/sx86ppg1xxhz0bpq46nzmfaans51cccq-pcl-1.15.1/lib/libpcl_keypoints.so
+-- Found PCL_TRACKING: /nix/store/sx86ppg1xxhz0bpq46nzmfaans51cccq-pcl-1.15.1/lib/libpcl_tracking.so
+-- Found PCL_RECOGNITION: /nix/store/sx86ppg1xxhz0bpq46nzmfaans51cccq-pcl-1.15.1/lib/libpcl_recognition.so
+-- Found PCL_STEREO: /nix/store/sx86ppg1xxhz0bpq46nzmfaans51cccq-pcl-1.15.1/lib/libpcl_stereo.so
+-- Found PCL_OUTOFCORE: /nix/store/sx86ppg1xxhz0bpq46nzmfaans51cccq-pcl-1.15.1/lib/libpcl_outofcore.so
+-- Found PCL_PEOPLE: /nix/store/sx86ppg1xxhz0bpq46nzmfaans51cccq-pcl-1.15.1/lib/libpcl_people.so
+-- bievr_lio_ros2: livox_ros_driver2 found, enabling Livox support.
+-- Configuring done (61.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_build/bievr_lio_ros2
+[ 50%] Building CXX object CMakeFiles/process_bag.dir/src/process_bag.cpp.o
+[ 50%] Building CXX object CMakeFiles/process_topics.dir/src/process_topics.cpp.o
+In file included from /home/bocho0600/roar/BIEVR-LIO/interfaces/ros2/src/process_topics.cpp:18:
+/tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/config_loader.h:1:3: error: ‘os’ does not name a type
+    1 |   os << "  qos_reliable:         " << yn(tc.qos_reliable) << "\n";
+      |   ^~
+/tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/config_loader.h:2:3: error: ‘os’ does not name a type
+    2 |   os << "  pointcloud_depth:     " << tc.pointcloud_queue_depth << "\n";
+      |   ^~
+/tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/config_loader.h:3:3: error: ‘os’ does not name a type
+    3 |   os << "  imu_depth:            " << tc.imu_queue_depth << "\n";
+      |   ^~
+/tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/config_loader.h:4:3: error: ‘tc’ does not name a type; did you mean ‘tm’?
+    4 |   tc.qos_reliable = yaml.get<bool>("topics", "qos_reliable", tc.qos_reliable);
+      |   ^~
+      |   tm
+/tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/config_loader.h:5:3: error: expected unqualified-id before ‘if’
+    5 |   if (!config_internal::getPositive(yaml, "topics", "pointcloud_queue_depth", 20,
+      |   ^~
+In file included from /home/bocho0600/roar/BIEVR-LIO/interfaces/ros2/src/process_bag.cpp:16:
+/tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/config_loader.h:1:3: error: ‘os’ does not name a type
+    1 |   os << "  qos_reliable:         " << yn(tc.qos_reliable) << "\n";
+      |   ^~
+/tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/config_loader.h:2:3: error: ‘os’ does not name a type
+    2 |   os << "  pointcloud_depth:     " << tc.pointcloud_queue_depth << "\n";
+      |   ^~
+/tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/config_loader.h:3:3: error: ‘os’ does not name a type
+    3 |   os << "  imu_depth:            " << tc.imu_queue_depth << "\n";
+      |   ^~
+/tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/config_loader.h:4:3: error: ‘tc’ does not name a type; did you mean ‘tm’?
+    4 |   tc.qos_reliable = yaml.get<bool>("topics", "qos_reliable", tc.qos_reliable);
+      |   ^~
+      |   tm
+/tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/config_loader.h:5:3: error: expected unqualified-id before ‘if’
+    5 |   if (!config_internal::getPositive(yaml, "topics", "pointcloud_queue_depth", 20,
+      |   ^~
+gmake[2]: *** [CMakeFiles/process_bag.dir/build.make:79: CMakeFiles/process_bag.dir/src/process_bag.cpp.o] Error 1
+gmake[1]: *** [CMakeFiles/Makefile2:188: CMakeFiles/process_bag.dir/all] Error 2
+gmake[1]: *** Waiting for unfinished jobs....
+gmake[2]: *** [CMakeFiles/process_topics.dir/build.make:79: CMakeFiles/process_topics.dir/src/process_topics.cpp.o] Error 1
+gmake[1]: *** [CMakeFiles/Makefile2:156: CMakeFiles/process_topics.dir/all] Error 2
+gmake: *** [Makefile:146: all] Error 2

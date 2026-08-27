@@ -34,6 +34,18 @@ struct TopicConfig {
   std::string pointcloud_topic = "/points";
   std::string imu_topic = "/imu";
   std::string bag_path = "";
+  /*** How the two sensor streams are subscribed to. Best-effort by default, because a
+       sample is only useful while it is current: a lost scan costs one update, a late scan
+       drags the estimate behind reality. Set qos_reliable when the publisher sits across a
+       link that loses fragments and the extra latency is worth paying -- a MID-360
+       PointCloud2 is around half a megabyte, so UDP fragments it into hundreds of datagrams
+       and one lost datagram discards the whole scan.
+       The depths matter separately: the default sensor-data depth of 5 is 25 ms at 200 Hz,
+       so any stall in the callback thread drops IMU samples that de-skewing then has to
+       manage without. ***/
+  bool qos_reliable = false;
+  int pointcloud_queue_depth = 20;
+  int imu_queue_depth = 200;
 };
 
 struct Config {
@@ -141,6 +153,9 @@ inline void printConfigOverview(const Config& config) {
   os << "topics:\n";
   os << "  pointcloud:           " << tc.pointcloud_topic << "\n";
   os << "  imu:                  " << tc.imu_topic << "\n";
+  os << "  qos_reliable:         " << yn(tc.qos_reliable) << "\n";
+  os << "  pointcloud_depth:     " << tc.pointcloud_queue_depth << "\n";
+  os << "  imu_depth:            " << tc.imu_queue_depth << "\n";
   os << "max_num_threads:        "
      << (config.max_num_threads > 0 ? std::to_string(config.max_num_threads)
                                     : std::string("automatic"))
@@ -219,6 +234,13 @@ inline bool loadConfigFromYaml(const std::vector<std::string>& yaml_paths, Confi
   // --- topics ---
   tc.pointcloud_topic = yaml.get<std::string>("topics", "pointcloud", tc.pointcloud_topic);
   tc.imu_topic = yaml.get<std::string>("topics", "imu", tc.imu_topic);
+  tc.qos_reliable = yaml.get<bool>("topics", "qos_reliable", tc.qos_reliable);
+  if (!config_internal::getPositive(yaml, "topics", "pointcloud_queue_depth", 20,
+                                    tc.pointcloud_queue_depth) ||
+      !config_internal::getPositive(yaml, "topics", "imu_queue_depth", 200,
+                                    tc.imu_queue_depth)) {
+    return false;
+  }
 
   // --- lidar ---
   hc.preprocess.min_range = yaml.get<double>("lidar", "min_range_m", 0.5);

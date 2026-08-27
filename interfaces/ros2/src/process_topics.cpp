@@ -69,13 +69,22 @@ int main(int argc, char** argv) {
   }
   LOG(I, "Pointcloud topic type: " << pc_type);
 
-  // QoS must be compatible with the publisher. SensorDataQoS (best-effort)
-  // matches most LiDAR drivers (e.g. Ouster); some drivers (e.g. Livox) publish
-  // reliable — adjust here if you see no messages arriving.
-  const rclcpp::QoS sensor_qos = rclcpp::SensorDataQoS();
+  /*** Subscription QoS. Best-effort is compatible with both best-effort and reliable
+       publishers, so it is the safe default and the right one for live sensor data: a
+       sample is only useful while it is current. topics.qos_reliable trades latency for
+       delivery when the publisher is across a lossy link, and the depths are separate
+       because the sensor-data default of 5 is only 25 ms of IMU at 200 Hz -- short enough
+       that any stall in the callback thread costs samples the de-skewing then has to manage
+       without. ***/
+  const auto make_qos = [&](int depth) {
+    rclcpp::QoS qos(rclcpp::KeepLast(static_cast<size_t>(depth)));
+    return config.topic_config.qos_reliable ? qos.reliable() : qos.best_effort();
+  };
+  const rclcpp::QoS pointcloud_qos = make_qos(config.topic_config.pointcloud_queue_depth);
+  const rclcpp::QoS imu_qos = make_qos(config.topic_config.imu_queue_depth);
 
   auto pc_sub = node->create_generic_subscription(
-      pc_topic, pc_type, sensor_qos,
+      pc_topic, pc_type, pointcloud_qos,
       [&, pc_type](std::shared_ptr<rclcpp::SerializedMessage> serialized) {
         if (pc_type == "sensor_msgs/msg/PointCloud2") {
           sensor_msgs::msg::PointCloud2 msg;
@@ -103,7 +112,7 @@ int main(int argc, char** argv) {
       });
 
   auto imu_sub = node->create_subscription<sensor_msgs::msg::Imu>(
-      config.topic_config.imu_topic, sensor_qos, [&](const sensor_msgs::msg::Imu::SharedPtr msg) {
+      config.topic_config.imu_topic, imu_qos, [&](const sensor_msgs::msg::Imu::SharedPtr msg) {
         bievr::ImuMeasurement imu;
         if (!bievr::msgToImuMeasurement(*msg, imu)) {
           return;

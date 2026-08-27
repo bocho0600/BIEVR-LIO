@@ -4,6 +4,26 @@
 #include "bievr_lio/utils.h"
 
 namespace bievr {
+namespace {
+
+/*** Neither queue is drained until the *other* one has something to pair with, so a sensor
+     that stops publishing leaves the one that is still running growing without bound: at
+     200 Hz a dead LiDAR costs about 10 MB of IMU samples an hour, forever. Both are capped
+     at well over any plausible synchronisation gap, so reaching the cap means a stream is
+     gone rather than late, and the oldest samples are the ones that will never be
+     matched. ***/
+template <typename QueueT>
+void dropOldest(QueueT& queue, size_t max_size, const char* what) {
+  if (queue.size() <= max_size) return;
+  const size_t n_dropped = queue.size() - max_size;
+  for (size_t i = 0; i < n_dropped; ++i) queue.pop_front();
+  LOG_TIMED(W, 5.0,
+            "Synchronizer queue of " << what << " is full (" << max_size
+                                     << "); the other sensor stream has stopped. Dropping the "
+                                        "oldest measurements.");
+}
+
+}  // namespace
 
 bool Synchronizer::addImu(const ImuMeasurement& imu) {
   if (!imu_queue_.empty() && imu.stamp < imu_queue_.back().stamp) {
@@ -11,6 +31,7 @@ bool Synchronizer::addImu(const ImuMeasurement& imu) {
     return false;
   }
   imu_queue_.push_back(imu);
+  dropOldest(imu_queue_, kMaxImuQueue, "IMU measurements");
   synchronizeData();
   return true;
 }
@@ -22,6 +43,7 @@ bool Synchronizer::addPointcloud(const StampedIntensityPointcloud& cloud) {
     return false;
   }
   point_queue_.push_back(cloud);
+  dropOldest(point_queue_, kMaxPointQueue, "pointclouds");
   synchronizeData();
   return true;
 }
