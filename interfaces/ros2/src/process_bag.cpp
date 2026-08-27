@@ -39,6 +39,9 @@ int main(int argc, char** argv) {
   // returns just the application arguments (our config-file flags).
   if (!bievr::loadConfigFromArgs(rclcpp::remove_ros_arguments(argc, argv), config)) {
     LOG(E, "Failed to load config.");
+    // Returning without this tears the node down after the context has gone, which segfaults
+    // on the way out -- turning a perfectly clear "failed to load config" into a core dump.
+    rclcpp::shutdown();
     return -1;
   }
 

@@ -1,0 +1,2 @@
+/nix/store/39lyf5g2iz4jd2r6q4g5whk9vw09zglj-binutils-2.46/bin/ld.bfd: warning: libgflags.so.2.3, needed by /nix/store/cr54cdl7rkjh13pyhf22i9spm349lsvr-glog-0.7.1/lib/libglog.so.0.7.1, may conflict with libgflags.so.2.2
+/nix/store/39lyf5g2iz4jd2r6q4g5whk9vw09zglj-binutils-2.46/bin/ld.bfd: warning: libgflags.so.2.3, needed by /nix/store/cr54cdl7rkjh13pyhf22i9spm349lsvr-glog-0.7.1/lib/libglog.so.0.7.1, may conflict with libgflags.so.2.2
