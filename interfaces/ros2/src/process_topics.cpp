@@ -13,6 +13,7 @@
 #include <rclcpp/serialization.hpp>
 #include <sensor_msgs/msg/imu.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
+#include <std_srvs/srv/trigger.hpp>
 #include <string>
 
 #include "bievr_lio/config_loader.h"
@@ -157,22 +158,25 @@ int main(int argc, char** argv) {
   // as well as in the pipeline because T_I_B is composed from it.
   bievr::Transform T_I_L = config.pipeline_config.T_I_L;
 
+  // Reads `target -> source` into `out`, reporting (at most every 5 s) why not. Declared
+  // out here, not inside the block below: the timer captures it by reference and runs for
+  // the life of the process, so a lambda scoped to that block would be read back long after
+  // it had been destroyed.
+  const auto lookup = [&](const std::string& target, const std::string& source,
+                          bievr::Transform& out) {
+    try {
+      bievr::msgToTransformStamped(
+          tf_buffer->lookupTransform(target, source, tf2::TimePointZero), out);
+    } catch (const tf2::TransformException& e) {
+      LOG_TIMED(W, 5.0, "Waiting for " << target << " -> " << source << ": " << e.what());
+      return false;
+    }
+    return true;
+  };
+
   if (pipeline->needsBaseExtrinsic() || config.pipeline_config.calibration_from_tf) {
     tf_buffer = std::make_unique<tf2_ros::Buffer>(node->get_clock());
     tf_listener = std::make_shared<tf2_ros::TransformListener>(*tf_buffer, node);
-
-    // Reads `target -> source` into `out`, reporting (at most every 5 s) why not.
-    const auto lookup = [&](const std::string& target, const std::string& source,
-                            bievr::Transform& out) {
-      try {
-        bievr::msgToTransformStamped(
-            tf_buffer->lookupTransform(target, source, tf2::TimePointZero), out);
-      } catch (const tf2::TransformException& e) {
-        LOG_TIMED(W, 5.0, "Waiting for " << target << " -> " << source << ": " << e.what());
-        return false;
-      }
-      return true;
-    };
 
     extrinsic_timer = node->create_wall_timer(200ms, [&]() {
       if (config.pipeline_config.calibration_from_tf && !pipeline->lidarExtrinsicValid()) {
@@ -202,6 +206,29 @@ int main(int argc, char** argv) {
       extrinsic_timer->cancel();
     });
   }
+
+  /*** The accumulated map, on /<ns>/map, and a service to write it to disk.
+       Both walk every observed voxel's height image, so both are expensive and both run on
+       this executor's one thread -- the periodic publish is off unless publish.map_interval_s
+       asks for it, and map_save costs a dropped scan or two whenever it is called. That is
+       the same trade FAST-LIO's /map_save makes, and the reason neither is per-scan. ***/
+  rclcpp::TimerBase::SharedPtr map_timer;
+  if (config.pipeline_config.map_interval_s > 0.) {
+    map_timer = node->create_wall_timer(
+        std::chrono::duration<double>(config.pipeline_config.map_interval_s),
+        [&]() { pipeline->publishMap(); });
+  }
+
+  auto map_save_srv = node->create_service<std_srvs::srv::Trigger>(
+      "map_save",
+      [&](const std::shared_ptr<std_srvs::srv::Trigger::Request>,
+          std::shared_ptr<std_srvs::srv::Trigger::Response> response) {
+        std::string message;
+        response->success = pipeline->saveMap("", message);
+        response->message = message;
+        LOG(I, response->success, "map_save: " << message);
+        LOG(W, !response->success, "map_save failed: " << message);
+      });
 
   rclcpp::spin(node);
   rclcpp::shutdown();
