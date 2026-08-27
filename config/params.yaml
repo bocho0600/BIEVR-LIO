@@ -5,7 +5,7 @@ map:
   smooth: True # Apply smoothing to the voxel image
   weighted: True # Weighted pixel update
   max_size: 1500000 # Maximum number of voxels to keep in the map
-  frame: "odom"
+  frame: "odom" # World-fixed parent frame of the published odometry and clouds
 
 preprocess:
   downsample_resolution_m: 0.1 # Downsample points to this resolution [m]. In case of informed sampling, this
@@ -15,10 +15,53 @@ preprocess:
 optimization:
   huber_delta: 0.1 # Huber norm threshold
 
-imu:  
+imu:
     window_s: 10 # Time window for the inertial optimization [s]
     t_init: 0.2 # Time to initialize bias and gravity [s]
-    frame: "imu"
+    frame: "imu" # IMU body frame: the child frame of the published odometry and TF
+
+# Sensor-config files own min_range_m / max_range_m; `frame` is set here because it is a
+# property of the robot's TF tree rather than of the sensor model. Leaf keys merge across
+# the two files, so a sensor config may still override it.
+lidar:
+  # Names the LiDAR link. Nothing is published in it: it is the source frame of the
+  # lidar -> base lookup the `base` switches below read from TF, and the child of the
+  # optional static transform under `publish`.
+  frame: "lidar"
+
+# The robot base. Only `frame` is free-standing; the three switches below all need
+# lidar.frame -> base.frame to be resolvable in TF, which the node reads once at startup.
+base:
+  frame: "base_link"
+  # true: report base.frame on the odometry topic instead of imu.frame, with the pose
+  # composed as T_world_imu * T_imu_base. Use when a downstream filter wants the base pose
+  # directly, with no transform of its own between the message's child frame and its base.
+  # The message is withheld, not mislabelled, until the transform resolves.
+  odom_in_base: false
+  # true: put the world origin on base.frame's initial pose rather than the IMU's, so the
+  # ground plane sits near z = 0 instead of at minus the sensor mounting height. Position
+  # only -- the heading is the separate switch below.
+  origin_at_base: false
+  # true: put the world heading on base.frame too. Initialisation gravity-aligns the world
+  # frame, which fixes roll and pitch only (an accelerometer cannot observe yaw), so the
+  # world frame otherwise inherits the IMU's startup heading -- and the IMU sits inside the
+  # LiDAR housing at whatever yaw the mounting imposes. A sensor seated a quarter turn round
+  # therefore puts base.frame 90 degrees off the world frame from the first message.
+  # Both this and origin_at_base hold initialisation back until the transform resolves: the
+  # world frame they define cannot be applied after the map has been built in another one.
+  heading_at_base: false
+
+# What goes onto TF. The topics themselves are not optional.
+publish:
+  # false: publish the odometry but do not broadcast it as a transform. Turn this off when
+  # another node (e.g. a robot_localization EKF) already owns that edge -- two publishers on
+  # one TF edge make lookups depend on message arrival order. The child frame follows the
+  # odometry message, so with base.odom_in_base set this edge is map -> base rather than
+  # map -> imu.
+  tf: true
+  # true: also broadcast a static imu.frame -> lidar.frame transform from the calibration
+  # extrinsic. Off by default: a robot description usually already publishes that edge.
+  tf_lidar: false
 
 debug:
   publish_all_clouds: False # Publish all clouds (fine, coarse, deskewed)

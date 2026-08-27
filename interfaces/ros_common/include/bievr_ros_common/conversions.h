@@ -409,6 +409,19 @@ bool msgToImuMeasurement(const ImuMsgT& imu_msg, ImuMeasurement& imu) {
   return true;
 }
 
+// geometry_msgs/TransformStamped -> Transform. Separate from msgToTransform below rather
+// than an overload of it: the two messages nest the pose differently and nothing generic
+// distinguishes them, so one name for both would resolve by accident.
+template <typename TransformStampedT>
+bool msgToTransformStamped(const TransformStampedT& msg, Transform& transform) {
+  transform.translation() << msg.transform.translation.x, msg.transform.translation.y,
+      msg.transform.translation.z;
+  transform.linear() = Eigen::Quaterniond(msg.transform.rotation.w, msg.transform.rotation.x,
+                                          msg.transform.rotation.y, msg.transform.rotation.z)
+                           .toRotationMatrix();
+  return true;
+}
+
 template <typename OdomMsgT>
 bool msgToTransform(const OdomMsgT& odom_msg, Transform& transform) {
   transform.translation() << odom_msg.pose.pose.position.x, odom_msg.pose.pose.position.y,

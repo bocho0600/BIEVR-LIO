@@ -3,6 +3,9 @@
 #include <bievr_lio/synchronizer.h>
 #include <tbb/global_control.h>
 #include <tbb/task_arena.h>
+#include <tf2_ros/buffer.h>
+#include <tf2_ros/static_transform_broadcaster.h>
+#include <tf2_ros/transform_listener.h>
 
 #include <chrono>
 #include <memory>
@@ -107,6 +110,60 @@ int main(int argc, char** argv) {
         }
         synchronizer->addImu(imu);
       });
+
+  /*** Static body -> lidar transform, straight from the LiDAR-IMU calibration. Off by
+       default because a robot description normally already publishes that edge. ***/
+  std::shared_ptr<tf2_ros::StaticTransformBroadcaster> static_tf_broadcaster;
+  if (config.pipeline_config.publish_tf_lidar) {
+    static_tf_broadcaster = std::make_shared<tf2_ros::StaticTransformBroadcaster>(node);
+    geometry_msgs::msg::TransformStamped static_tf;
+    static_tf.header.stamp = node->now();
+    static_tf.header.frame_id = config.pipeline_config.body_frame;
+    static_tf.child_frame_id = config.pipeline_config.lidar_frame;
+    bievr::transformToMsg(config.pipeline_config.T_I_L, static_tf.transform);
+    static_tf_broadcaster->sendTransform(static_tf);
+  }
+
+  /*** The base_frame switches need to know where the robot base sits relative to the
+       sensor, and only the robot description knows that. Read lidar_frame -> base_frame
+       from TF once and hand the pipeline T_I_B = T_I_L * T_L_B.
+       Polled on a timer rather than waited for inline, because the description may come up
+       after this node does and blocking here would also block the subscriptions. The
+       pipeline decides what to do in the meantime: origin_at_base and heading_at_base hold
+       initialisation back (the world frame they define cannot be applied retroactively),
+       odom_in_base only withholds the odometry message. ***/
+  rclcpp::TimerBase::SharedPtr base_extrinsic_timer;
+  std::unique_ptr<tf2_ros::Buffer> tf_buffer;
+  std::shared_ptr<tf2_ros::TransformListener> tf_listener;
+  if (pipeline->needsBaseExtrinsic()) {
+    tf_buffer = std::make_unique<tf2_ros::Buffer>(node->get_clock());
+    tf_listener = std::make_shared<tf2_ros::TransformListener>(*tf_buffer, node);
+    base_extrinsic_timer = node->create_wall_timer(200ms, [&]() {
+      if (pipeline->baseExtrinsicValid()) {
+        base_extrinsic_timer->cancel();
+        return;
+      }
+      geometry_msgs::msg::TransformStamped tf_lidar_base;
+      try {
+        tf_lidar_base = tf_buffer->lookupTransform(config.pipeline_config.lidar_frame,
+                                                   config.pipeline_config.base_frame,
+                                                   tf2::TimePointZero);
+      } catch (const tf2::TransformException& e) {
+        LOG_TIMED(W, 5.0,
+                  "Waiting for " << config.pipeline_config.lidar_frame << " -> "
+                                 << config.pipeline_config.base_frame << ": " << e.what());
+        return;
+      }
+      bievr::Transform T_L_B;
+      bievr::msgToTransformStamped(tf_lidar_base, T_L_B);
+      const bievr::Transform T_I_B(
+          Eigen::Isometry3d(config.pipeline_config.T_I_L * T_L_B));
+      pipeline->setBaseExtrinsic(T_I_B);
+      LOG(I, "Resolved " << config.pipeline_config.base_frame << " in IMU coordinates: t = ["
+                         << T_I_B.translation().transpose() << "].");
+      base_extrinsic_timer->cancel();
+    });
+  }
 
   rclcpp::spin(node);
   rclcpp::shutdown();

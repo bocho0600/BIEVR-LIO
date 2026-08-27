@@ -52,6 +52,17 @@ int main(int argc, char** argv) {
   auto synchronizer = std::make_shared<bievr::Synchronizer>(pipeline);
   auto lio_pub = std::make_shared<bievr::Publisher>(node, pipeline, "bievr_lio");
 
+  /*** The base_frame switches need lidar_frame -> base_frame from a live TF tree, which
+       nothing publishes during a bag replay. Say so rather than sitting silently at a
+       "waiting for the transform" that will never arrive. ***/
+  if (pipeline->needsBaseExtrinsic()) {
+    LOG(W,
+        "The `base` switches (odom_in_base / origin_at_base / heading_at_base) need "
+        "lidar_frame -> base_frame from TF, which is not available when replaying a bag. "
+        "Turn them off for bag processing, or use process_topics with a robot description "
+        "running.");
+  }
+
   rosbag2_cpp::Reader reader;
   reader.open(config.topic_config.bag_path);
 

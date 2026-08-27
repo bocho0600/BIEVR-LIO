@@ -1,0 +1,77 @@
+-- The CXX compiler identification is GNU 15.2.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /nix/store/xcnqqnhw9hb4j5rjgds2yjryi8qki5f3-gcc-wrapper-15.2.0/bin/g++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE
+-- Found CXSparse: /nix/store/p6if5qx3k8skshkb380mh1ps5d0pw6vc-suitesparse-5.13.0-dev/include (found suitable version "3.2.0", minimum required is "3.2.0")
+-- Found AMD headers in: /nix/store/p6if5qx3k8skshkb380mh1ps5d0pw6vc-suitesparse-5.13.0-dev/include
+-- Found AMD library: /nix/store/q27a1rbgkbdjnc84phqmla2131ll53rz-suitesparse-5.13.0/lib/libamd.so
+-- Found CAMD headers in: /nix/store/p6if5qx3k8skshkb380mh1ps5d0pw6vc-suitesparse-5.13.0-dev/include
+-- Found CAMD library: /nix/store/q27a1rbgkbdjnc84phqmla2131ll53rz-suitesparse-5.13.0/lib/libcamd.so
+-- Found CCOLAMD headers in: /nix/store/p6if5qx3k8skshkb380mh1ps5d0pw6vc-suitesparse-5.13.0-dev/include
+-- Found CCOLAMD library: /nix/store/q27a1rbgkbdjnc84phqmla2131ll53rz-suitesparse-5.13.0/lib/libccolamd.so
+-- Found CHOLMOD headers in: /nix/store/p6if5qx3k8skshkb380mh1ps5d0pw6vc-suitesparse-5.13.0-dev/include
+-- Found CHOLMOD library: /nix/store/q27a1rbgkbdjnc84phqmla2131ll53rz-suitesparse-5.13.0/lib/libcholmod.so
+-- Found COLAMD headers in: /nix/store/p6if5qx3k8skshkb380mh1ps5d0pw6vc-suitesparse-5.13.0-dev/include
+-- Found COLAMD library: /nix/store/q27a1rbgkbdjnc84phqmla2131ll53rz-suitesparse-5.13.0/lib/libcolamd.so
+-- Found SPQR headers in: /nix/store/p6if5qx3k8skshkb380mh1ps5d0pw6vc-suitesparse-5.13.0-dev/include
+-- Found SPQR library: /nix/store/q27a1rbgkbdjnc84phqmla2131ll53rz-suitesparse-5.13.0/lib/libspqr.so
+-- Found Config headers in: /nix/store/p6if5qx3k8skshkb380mh1ps5d0pw6vc-suitesparse-5.13.0-dev/include
+-- Found Config library: /nix/store/q27a1rbgkbdjnc84phqmla2131ll53rz-suitesparse-5.13.0/lib/libsuitesparseconfig.so
+-- Found Intel Thread Building Blocks (TBB) library (2022.3 / ) include location: . Assuming SuiteSparseQR was compiled with TBB.
+-- Looking for shm_open in rt
+-- Looking for shm_open in rt - found
+-- Adding librt to SuiteSparse_config libraries (required on Linux & Unix [not OSX] if SuiteSparse is compiled with timing).
+-- Found METIS: /nix/store/73j0ny8fznx3ixxlb7415dsajqgg20s4-metis-5.2.1/include (found version "5.2.1")
+-- Found SuiteSparse: /nix/store/p6if5qx3k8skshkb380mh1ps5d0pw6vc-suitesparse-5.13.0-dev/include (found suitable version "5.13.0", minimum required is "5.13.0") found components: AMD CAMD CCOLAMD CHOLMOD COLAMD SPQR Config
+-- Found required Ceres dependency: Eigen version 3.4.1 in /nix/store/d08vaglnb83g7nrdjfrxfdkw8rrx3rba-eigen-3.4.1/share/eigen3/cmake
+-- Found required Ceres dependency: glog
+-- Found required Ceres dependency: gflags
+-- Found Ceres version: 2.1.0 installed in: / with components: [EigenSparse, SparseLinearAlgebraLibrary, LAPACK, SuiteSparse, CXSparse, SchurSpecializations, Multithreading]
+-- Configuring done (22.9s)
+-- Generating done (0.0s)
+-- Build files have been written to: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_build/bievr_lio
+[  7%] Building CXX object CMakeFiles/bievr_lio.dir/src/bievr_map.cpp.o
+[ 15%] Building CXX object CMakeFiles/bievr_lio.dir/src/pipeline.cpp.o
+[ 23%] Building CXX object CMakeFiles/bievr_lio.dir/src/common.cpp.o
+[ 30%] Building CXX object CMakeFiles/bievr_lio.dir/src/imu_integrator.cpp.o
+[ 38%] Building CXX object CMakeFiles/bievr_lio.dir/src/ls_optimizer.cpp.o
+[ 46%] Building CXX object CMakeFiles/bievr_lio.dir/src/inertial_factor.cpp.o
+[ 53%] Building CXX object CMakeFiles/bievr_lio.dir/src/timing.cpp.o
+[ 61%] Building CXX object CMakeFiles/bievr_lio.dir/src/preprocess.cpp.o
+[ 69%] Building CXX object CMakeFiles/bievr_lio.dir/src/utils.cpp.o
+[ 76%] Building CXX object CMakeFiles/bievr_lio.dir/src/undistort.cpp.o
+[ 84%] Building CXX object CMakeFiles/bievr_lio.dir/src/prior_factor.cpp.o
+[ 92%] Building CXX object CMakeFiles/bievr_lio.dir/src/synchronizer.cpp.o
+[100%] Linking CXX shared library libbievr_lio.so
+[100%] Built target bievr_lio
+-- Install configuration: "Release"
+-- Installing: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/lib64/libbievr_lio.so
+-- Set non-toolchain portion of runtime path of "/tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/lib64/libbievr_lio.so" to ""
+-- Installing: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include
+-- Installing: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/unordered_dense
+-- Installing: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/unordered_dense/stl.h
+-- Installing: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/unordered_dense/unordered_dense.h
+-- Installing: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio
+-- Installing: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/bievr_map.h
+-- Installing: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/imu_integrator.h
+-- Installing: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/synchronizer.h
+-- Installing: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/undistort.h
+-- Installing: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/timing.h
+-- Installing: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/prior_factor.h
+-- Installing: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/preprocess.h
+-- Installing: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/config_loader.h
+-- Installing: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/ls_optimizer.h
+-- Installing: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/pipeline.h
+-- Installing: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/utils.h
+-- Installing: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/log++.h
+-- Installing: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/inertial_factor.h
+-- Installing: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/include/bievr_lio/common.h
+-- Installing: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/lib64/cmake/bievr_lio/bievr_lioTargets.cmake
+-- Installing: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/lib64/cmake/bievr_lio/bievr_lioTargets-release.cmake
+-- Installing: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/lib64/cmake/bievr_lio/bievr_lioConfig.cmake
+-- Installing: /tmp/claude-1000/-home-bocho0600-roar-perseus-v3/c5ccf6d7-a418-415e-95cf-0b89941c0407/scratchpad/bievr_install/bievr_lio/lib64/cmake/bievr_lio/bievr_lioConfigVersion.cmake

@@ -52,6 +52,21 @@ void Pipeline::processFrame(const std::vector<ImuMeasurement>& imu_data,
     return;
   }
 
+  /*** origin_at_base and heading_at_base are applied inside initializeBias, so the world
+       frame they define cannot be reconstructed after the fact -- the map is built in it.
+       Hold the whole pipeline back until the wrapper has resolved lidar_frame ->
+       base_frame rather than initialising around the IMU and being silently offset for the
+       rest of the run. odom_in_base is deliberately not in this list: it only relabels what
+       is published, so it can withhold the odometry message instead (see
+       publishLatestState) and let the filter carry on. ***/
+  if ((config_.origin_at_base || config_.heading_at_base) && !base_extrinsic_valid_) {
+    LOG_TIMED(W, 5.0,
+              "Waiting for the " << config_.lidar_frame << " -> " << config_.base_frame
+                                 << " transform before initialising: origin_at_base or "
+                                    "heading_at_base needs it to place the world frame.");
+    return;
+  }
+
   // Cache the latest gyro reading so the odometry twist can report the current
   // angular velocity (already expressed in the body/IMU frame).
   latest_gyro_ = imu_data.back().gyro;
@@ -179,6 +194,11 @@ void Pipeline::processFrame(const std::vector<ImuMeasurement>& imu_data,
   }
 }
 
+void Pipeline::setBaseExtrinsic(const Transform& T_I_B) {
+  T_I_B_ = T_I_B;
+  base_extrinsic_valid_ = true;
+}
+
 bool Pipeline::initializeBias(const std::vector<ImuMeasurement>& imu_data,
                               const Pointcloud& pointcloud) {
   if (!bias_initializer_) {
@@ -193,7 +213,7 @@ bool Pipeline::initializeBias(const std::vector<ImuMeasurement>& imu_data,
   acc_bias_ = bias_initializer_->accBias();
   gyro_bias_ = bias_initializer_->gyroBias();
   imu_acc_scale_ = bias_initializer_->accScale();
-  const Rotation R_est = bias_initializer_->initialOrientation();
+  Rotation R_est = bias_initializer_->initialOrientation();
   bias_initializer_.reset();
 
   LOG(I, "Bias initialized: " << acc_bias_.transpose() << " " << gyro_bias_.transpose());
@@ -201,9 +221,47 @@ bool Pipeline::initializeBias(const std::vector<ImuMeasurement>& imu_data,
   LOG(I, "Initial Pitch: " << (180. / M_PI) * euler[1]);
   LOG(I, "Initial Roll: " << (180. / M_PI) * euler[2]);
 
+  /*** Move the world heading onto base_frame instead of the IMU.
+   *
+   * The orientation above is gravity alignment and nothing else: FromTwoVectors gives the
+   * minimal rotation taking measured gravity onto +z, and an accelerometer cannot observe
+   * yaw. So the world frame inherits the IMU's startup heading, and the IMU sits inside the
+   * LiDAR housing at whatever yaw the mounting bracket imposes. base_frame therefore starts
+   * at the inverse of that mounting yaw rather than at zero -- a LiDAR seated a quarter turn
+   * round puts base_frame exactly 90 degrees off the world frame from the first message.
+   *
+   * Removing base_frame's initial yaw from the world frame fixes it. The rotation is about
+   * world z, which gravity alignment has already made vertical, so roll, pitch and the
+   * gravity direction are all preserved and only the heading moves. Like the position
+   * seeding below this shifts the state rather than the published pose, so the map is built
+   * in the same frame and stays consistent with the odometry.
+   *
+   * Kept separate from origin_at_base on purpose: that switch is documented as moving the
+   * origin, and giving it a second meaning would change behaviour for anyone already
+   * setting it.
+   *
+   * This is a convention fix, not a correctness one -- REP-105 leaves the odom frame's
+   * heading arbitrary -- but a downstream filter that initialises at identity gets yanked by
+   * that offset on the first message, which costs a startup transient and is confusing to
+   * read. ***/
+  if (base_extrinsic_valid_ && config_.heading_at_base) {
+    const Rotation R_W_B = R_est * T_I_B_.rotation();
+    const double base_yaw = std::atan2(R_W_B(1, 0), R_W_B(0, 0));
+    R_est = Rotation(Eigen::AngleAxisd(-base_yaw, V3::UnitZ())) * R_est;
+    LOG(I, "Initial heading placed on " << config_.base_frame << " (removed "
+                                        << (180. / M_PI) * base_yaw << " deg of yaw).");
+  }
+
   State x_init;
   x_init.quat = R_est;
+  /*** Put the world origin on base_frame rather than on the IMU, so the ground plane sits
+       near z = 0 for everything downstream instead of at minus the sensor mounting height.
+       Runs after the heading block, because it rotates the offset by the final
+       orientation. ***/
   x_init.p = V3::Zero();
+  if (base_extrinsic_valid_ && config_.origin_at_base) {
+    x_init.p = -(R_est * T_I_B_.translation());
+  }
   x_init.v = V3::Zero();
 
   addState(imu_data.back().stamp, x_init.quat, x_init.p, x_init.v);
@@ -366,7 +424,31 @@ void Pipeline::publishLatestState(const Header& header) {
   // comes straight from the latest gyro measurement (already in the body frame).
   odom.linear_velocity = latest_state.quat.conjugate() * latest_state.v;
   odom.angular_velocity = latest_gyro_;
-  publish(odom, header, "odom", config_.body_frame);
+
+  if (config_.odom_in_base) {
+    /*** Publishing nothing while the extrinsic is unresolved is deliberate: the alternative
+         is labelling the IMU pose base_frame, which is exactly the wrong-pose bug this
+         switch exists to avoid. ***/
+    if (!base_extrinsic_valid_) {
+      LOG_TIMED(W, 5.0,
+                "Withholding odometry: odom_in_base is on but the "
+                    << config_.lidar_frame << " -> " << config_.base_frame
+                    << " transform is not in TF yet.");
+    } else {
+      /*** Rigid-body transfer of the twist onto the base. The base is offset from the IMU,
+           so under rotation it moves at a different linear velocity; both components are
+           then expressed in base_frame to match the message's child frame. ***/
+      const Rotation R_B_I = T_I_B_.rotation().transpose();
+      const V3 v_base_I = odom.linear_velocity + odom.angular_velocity.cross(T_I_B_.translation());
+      odom.pose = Transform(Eigen::Isometry3d(odom.pose * T_I_B_));
+      odom.linear_velocity = R_B_I * v_base_I;
+      odom.angular_velocity = R_B_I * odom.angular_velocity;
+      publish(odom, header, "odom", config_.base_frame);
+    }
+  } else {
+    publish(odom, header, "odom", config_.body_frame);
+  }
+
   publish(acc_bias_, header, "bias/acc");
   publish(gyro_bias_, header, "bias/gyro");
 }

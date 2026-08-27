@@ -37,7 +37,7 @@ class PublisherBase {
   // under that namespace (e.g. ns="bievr_lio" turns "odometry" into
   // "/bievr_lio/odometry"). Absolute topics (leading '/') are left untouched.
   PublisherBase(Handle handle, std::shared_ptr<Pipeline> pipeline, const std::string& ns = "")
-      : backend_(std::move(handle)), ns_(ns) {
+      : backend_(std::move(handle)), ns_(ns), publish_tf_(pipeline->config().publish_tf) {
     registerTypes<Pointcloud, IntensityPointcloud, Odometry, V3>(pipeline);
   }
   virtual ~PublisherBase() = default;
@@ -82,12 +82,19 @@ class PublisherBase {
     vecToMsg(odometry.angular_velocity, odom_msg.twist.twist.angular);
     publishers_[topic].publish(odom_msg);
 
-    // Mirror the pose as a TF transform.
-    typename Backend::TransformStamped transform_msg;
-    transform_msg.header = odom_msg.header;
-    transform_msg.child_frame_id = child_frame;
-    transformToMsg(odometry.pose, transform_msg.transform);
-    backend_.sendTransform(transform_msg);
+    /*** Mirror the pose as a TF transform, unless another node owns that edge. Two
+         publishers on one TF edge make lookups depend on message arrival order, which is
+         the usual arrangement when a filter downstream (e.g. robot_localization) fuses this
+         odometry and broadcasts the result itself. The child frame follows the odometry
+         message, so with Pipeline::Config::odom_in_base set this is map_frame ->
+         base_frame rather than map_frame -> body_frame. ***/
+    if (publish_tf_) {
+      typename Backend::TransformStamped transform_msg;
+      transform_msg.header = odom_msg.header;
+      transform_msg.child_frame_id = child_frame;
+      transformToMsg(odometry.pose, transform_msg.transform);
+      backend_.sendTransform(transform_msg);
+    }
     return true;
   }
 
@@ -137,6 +144,7 @@ class PublisherBase {
 
   Backend backend_;
   std::string ns_;
+  bool publish_tf_ = true;
   std::unordered_map<std::string, typename Backend::TypedPublisher> publishers_;
 };
 

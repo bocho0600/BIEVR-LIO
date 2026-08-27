@@ -148,6 +148,7 @@ inline void printConfigOverview(const Config& config) {
   os << "lidar:\n";
   os << "  min_range_m:          " << hc.preprocess.min_range << "\n";
   os << "  max_range_m:          " << hc.preprocess.max_range << "\n";
+  os << "  frame:                " << hc.lidar_frame << "\n";
   os << "map:\n";
   os << "  pixel_size_m:   " << hc.map.px_size << "\n";
   os << "  voxel_size_m:   " << hc.map.voxel_size << "\n";
@@ -168,6 +169,14 @@ inline void printConfigOverview(const Config& config) {
   os << "  t_init:               " << hc.imu.t_init << "\n";
   os << "  normalized:           " << hc.imu.normalized << "\n";
   os << "  frame:                " << hc.body_frame << "\n";
+  os << "base:\n";
+  os << "  frame:                " << hc.base_frame << "\n";
+  os << "  odom_in_base:         " << yn(hc.odom_in_base) << "\n";
+  os << "  origin_at_base:       " << yn(hc.origin_at_base) << "\n";
+  os << "  heading_at_base:      " << yn(hc.heading_at_base) << "\n";
+  os << "publish:\n";
+  os << "  tf:                   " << yn(hc.publish_tf) << "\n";
+  os << "  tf_lidar:             " << yn(hc.publish_tf_lidar) << "\n";
   os << "debug:\n";
   os << "  publish_all_clouds:        " << yn(hc.publish_all_clouds) << "\n";
   os << "  print_timing:         " << yn(hc.print_timing) << "\n";
@@ -214,6 +223,10 @@ inline bool loadConfigFromYaml(const std::vector<std::string>& yaml_paths, Confi
   // --- lidar ---
   hc.preprocess.min_range = yaml.get<double>("lidar", "min_range_m", 0.5);
   hc.preprocess.max_range = yaml.get<double>("lidar", "max_range_m", 100.);
+  // Names the LiDAR link. Not a frame anything is published in -- it is the source of the
+  // lidar_frame -> base_frame lookup the wrapper reads from TF for the `base` switches, and
+  // the child of the optional static body -> lidar transform.
+  hc.lidar_frame = yaml.get<std::string>("lidar", "frame", hc.lidar_frame);
 
   // --- map ---
   // These resolutions/tolerances are optional (fall back to the defaults below)
@@ -256,6 +269,16 @@ inline bool loadConfigFromYaml(const std::vector<std::string>& yaml_paths, Confi
   hc.imu.normalized = yaml.get<double>("imu", "normalized", -1.0);
   // The IMU frame is the body (child) frame of the published odometry.
   hc.body_frame = yaml.get<std::string>("imu", "frame", hc.body_frame);
+
+  // --- base (the robot base, and what may be expressed relative to it) ---
+  hc.base_frame = yaml.get<std::string>("base", "frame", hc.base_frame);
+  hc.odom_in_base = yaml.get<bool>("base", "odom_in_base", hc.odom_in_base);
+  hc.origin_at_base = yaml.get<bool>("base", "origin_at_base", hc.origin_at_base);
+  hc.heading_at_base = yaml.get<bool>("base", "heading_at_base", hc.heading_at_base);
+
+  // --- publish (what goes onto TF; the topics themselves are not optional) ---
+  hc.publish_tf = yaml.get<bool>("publish", "tf", hc.publish_tf);
+  hc.publish_tf_lidar = yaml.get<bool>("publish", "tf_lidar", hc.publish_tf_lidar);
 
   // --- debug ---
   hc.publish_all_clouds = yaml.get<bool>("debug", "publish_all_clouds", false);

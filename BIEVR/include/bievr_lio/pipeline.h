@@ -27,8 +27,33 @@ class Pipeline {
     // Path to the ASCII art shown at the top of the dashboard (e.g. bievr_ascii.txt).
     std::string dashboard_ascii_path = "";
     Transform T_I_L = Transform::Identity();  // Transform from LiDAR to IMU frame
+    /*** TF frame names. map_frame is the world-fixed parent of the published odometry and
+         clouds; body_frame is the IMU, which is what the filter actually estimates.
+         lidar_frame and base_frame name links this node never estimates but has to be able
+         to talk about: lidar_frame is the source of the lidar_frame -> base_frame lookup the
+         wrapper reads from TF, and base_frame is the robot base the three switches below
+         express poses relative to. ***/
     std::string map_frame = "map";
     std::string body_frame = "body";
+    std::string lidar_frame = "lidar";
+    std::string base_frame = "base_link";
+    /*** Broadcast the odometry pose on TF as well as publishing it. Turn this off when
+         another node (e.g. a robot_localization EKF) already owns the map_frame -> body
+         edge: two publishers on one TF edge make lookups depend on message arrival order. ***/
+    bool publish_tf = true;
+    /*** Also broadcast a static body_frame -> lidar_frame transform, taken from the
+         LiDAR-IMU calibration. Off by default: a robot description usually already
+         publishes that edge, and two publishers on it would fight. ***/
+    bool publish_tf_lidar = false;
+    /*** Report base_frame rather than body_frame on the odometry topic, with the pose
+         composed as T_W_I * T_I_B. Use it when a downstream filter wants the base pose with
+         no transform of its own between the message's child frame and its base frame. ***/
+    bool odom_in_base = false;
+    /*** Put the world origin on base_frame's initial pose instead of the IMU's (position
+         only), and put the world heading on base_frame too. See initializeBias for why the
+         heading is a separate switch from the origin. ***/
+    bool origin_at_base = false;
+    bool heading_at_base = false;
     std::string log_path = "";
 
     size_t min_points_for_map_init = 100;
@@ -44,6 +69,22 @@ class Pipeline {
 
   void processFrame(const std::vector<ImuMeasurement>& imu_data,
                     const StampedIntensityPointcloud& pointcloud);
+
+  // Read-only view of the resolved configuration, so the ROS wrappers can honour the
+  // frame names and publishing switches without a second copy of them.
+  const Config& config() const { return config_; }
+
+  // Where base_frame sits in IMU coordinates: T_I_B = T_I_L * T_L_B, with T_L_B read from
+  // TF by the wrapper. Only the wrapper can know it, so it is pushed in rather than
+  // configured. Needed by odom_in_base, origin_at_base and heading_at_base; until it
+  // arrives the first two hold the pipeline back entirely (see processFrame) and the third
+  // withholds the odometry message.
+  void setBaseExtrinsic(const Transform& T_I_B);
+  bool baseExtrinsicValid() const { return base_extrinsic_valid_; }
+  // Whether anything that is enabled actually needs the extrinsic above.
+  bool needsBaseExtrinsic() const {
+    return config_.odom_in_base || config_.origin_at_base || config_.heading_at_base;
+  }
 
   template <typename T>
   void registerPublisher(std::function<void(const T&, const Header&, const std::string& topic,
@@ -108,6 +149,9 @@ class Pipeline {
   V3 acc_bias_ = V3::Zero();
   V3 gyro_bias_ = V3::Zero();
   V3 gravity_dir_ = V3(0, 0, 1);
+  // base_frame expressed in IMU coordinates, see setBaseExtrinsic.
+  Transform T_I_B_ = Transform::Identity();
+  bool base_extrinsic_valid_ = false;
   // Latest gyro reading, used to report the angular velocity in the odometry twist.
   V3 latest_gyro_ = V3::Zero();
   // Accelerometer scale resolved during bias estimation (1 if raw, g if the IMU
