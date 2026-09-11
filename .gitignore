@@ -1,0 +1,6 @@
+# colcon build output -- never meant to be committed. log/ ended up tracked by accident and
+# had been embedding literal /nix/store paths from local build command lines, which broke
+# nix's fetchFromGitHub purity check on any fresh pin of this repo.
+build/
+install/
+log/
