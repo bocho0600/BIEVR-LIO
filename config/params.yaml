@@ -5,6 +5,7 @@ map:
   smooth: True # Apply smoothing to the voxel image
   weighted: True # Weighted pixel update
   max_size: 1500000 # Maximum number of voxels to keep in the map
+  stale_timeout_s: 0 # Seconds a pixel can go unconfirmed before it is cleared. 0 disables decay.
   frame: "odom" # World-fixed parent frame of the published odometry and clouds
 
 preprocess:

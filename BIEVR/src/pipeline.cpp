@@ -172,7 +172,7 @@ void Pipeline::processFrame(const std::vector<ImuMeasurement>& imu_data,
   // Transform the full cloud using the estimated pose and add it to the map
   timing::Timer map_timer("06_map");
   const Pointcloud points_registered = T_W_I * points_undistorted_I;
-  map_->integratePoints(points_registered, &ranges);
+  map_->integratePoints(points_registered, &ranges, nsToS(header.stamp));
   map_timer.Stop();
 
   // Bookkeeping and optimization of the intertial part of the state
@@ -361,7 +361,7 @@ bool Pipeline::initializeBias(const std::vector<ImuMeasurement>& imu_data,
     for (size_t i = 0; i < pointcloud.size(); ++i) {
       ranges[i] = pointcloud[i].head<3>().norm();
     }
-    map_->integratePoints(T_W_I_init * pointcloud, &ranges);
+    map_->integratePoints(T_W_I_init * pointcloud, &ranges, nsToS(imu_data.back().stamp));
     phase_ = Phase::Running;
   }
   return true;
@@ -372,7 +372,7 @@ void Pipeline::tryInitMap(uint64_t stamp, const State& x_j_pred, const Transform
                           std::vector<double>& ranges, const Header& header) {
   if (undistorted.size() < config_.min_points_for_map_init) return;
   const Pointcloud registered = T_W_I_init * undistorted;
-  map_->integratePoints(registered, &ranges);
+  map_->integratePoints(registered, &ranges, nsToS(stamp));
   addState(stamp, x_j_pred.quat, x_j_pred.p, x_j_pred.v);
   publishLatestState(header);
   publish(IntensityPointcloud(registered, intensities), header, "points/registered");

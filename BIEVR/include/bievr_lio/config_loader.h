@@ -172,6 +172,10 @@ inline void printConfigOverview(const Config& config) {
   os << "  max_size:             " << hc.map.max_size << "\n";
   os << "  smooth:               " << yn(hc.map.smooth) << "\n";
   os << "  weighted:             " << yn(hc.map.weighted) << "\n";
+  os << "  stale_timeout_s:      "
+     << (hc.map.stale_timeout_s > 0.0 ? std::to_string(hc.map.stale_timeout_s)
+                                     : std::string("disabled"))
+     << "\n";
   os << "  frame:                " << hc.map_frame << "\n";
   os << "preprocess:\n";
   os << "  downsample_res_m:     " << hc.preprocess.downsample_resolution << "\n";
@@ -275,6 +279,9 @@ inline bool loadConfigFromYaml(const std::vector<std::string>& yaml_paths, Confi
   hc.map.max_size = static_cast<size_t>(max_size);
   hc.map.smooth = yaml.get<bool>("map", "smooth", false);
   hc.map.weighted = yaml.get<bool>("map", "weighted", false);
+  // 0 (the default) disables decay entirely, so this is a plain get rather than
+  // getPositive: unlike the resolutions above, 0 is a valid, meaningful value here.
+  hc.map.stale_timeout_s = yaml.get<double>("map", "stale_timeout_s", 0.0);
   // The map frame is the parent (odometry) frame for published poses/clouds.
   hc.map_frame = yaml.get<std::string>("map", "frame", hc.map_frame);
 

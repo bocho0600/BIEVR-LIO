@@ -41,7 +41,8 @@ BIEVRMap::BIEVRMap(Config config) : config_(config) {
   inv_px_size_ = 1.0 / config_.px_size;
 }
 
-bool BIEVRMap::integratePoints(const Pointcloud& cloud, const std::vector<double>* ranges) {
+bool BIEVRMap::integratePoints(const Pointcloud& cloud, const std::vector<double>* ranges,
+                               double time_s) {
   if (cloud.empty()) {
     LOG(I, "No points in cloud to map.");
     return false;
@@ -132,7 +133,7 @@ bool BIEVRMap::integratePoints(const Pointcloud& cloud, const std::vector<double
             pending.insert(pending.end(), voxel_points.begin(), voxel_points.end());
           }
 
-          updateBumpImage(voxel_points, iter->second.voxel, normal_change);
+          updateBumpImage(voxel_points, iter->second.voxel, normal_change, time_s);
         }
       });
 
@@ -201,7 +202,7 @@ bool BIEVRMap::updateNormal(Voxel& voxel) {
 }
 
 bool BIEVRMap::updateBumpImage(const std::vector<Eigen::Vector4d>& points, Voxel& voxel,
-                               bool normal_change) {
+                               bool normal_change, double time_s) {
   if (!voxel.observed_) {
     return false;
   }
@@ -215,8 +216,12 @@ bool BIEVRMap::updateBumpImage(const std::vector<Eigen::Vector4d>& points, Voxel
     changed = Eigen::MatrixXi::Zero(voxel.bump_img_.rows(), voxel.bump_img_.cols());
   }
 
+  // Drop pixels this voxel has not reconfirmed in a while before folding in this scan's
+  // points, so a stale height is replaced rather than blended into.
+  decayStalePixels(voxel, time_s);
+
   // Update the pixel values and weights based on the new points
-  integratePoints(points, voxel, changed);
+  integratePoints(points, voxel, changed, time_s);
 
   Eigen::MatrixXi changed_dilated =
       Eigen::MatrixXi::Zero(voxel.bump_img_.rows(), voxel.bump_img_.cols());
@@ -320,14 +325,17 @@ BIEVRMap::ImageBounds BIEVRMap::computeImageSize(const Voxel& voxel,
 void BIEVRMap::reprojectImage(Voxel& voxel, const ImageBounds& bounds, Eigen::MatrixXi& changed) {
   Eigen::MatrixXf bump_original = voxel.bump_img_;
   Eigen::MatrixXf weights_original = voxel.bump_weights_;
+  Eigen::MatrixXd last_seen_original = voxel.last_seen_s_;
   Transform T_W_C_o = voxel.T_C_W_.inverse();
   voxel.bump_img_.resize(bounds.height, bounds.width);
   voxel.bump_smoothed_.resize(bounds.height, bounds.width);
   voxel.bump_weights_.resize(bounds.height, bounds.width);
+  voxel.last_seen_s_.resize(bounds.height, bounds.width);
   changed.resize(bounds.height, bounds.width);
   voxel.bump_img_.setZero();
   voxel.bump_smoothed_.setZero();
   voxel.bump_weights_.setZero();
+  voxel.last_seen_s_.setZero();
   changed.setZero();
   Point p_o_planar(bounds.u_min, bounds.v_min, 0.0);
   Point p_w_o = voxel.T_O_W_.inverse() * p_o_planar;
@@ -352,13 +360,14 @@ void BIEVRMap::reprojectImage(Voxel& voxel, const ImageBounds& bounds, Eigen::Ma
 
       voxel.bump_img_(y, x) = p_O(2);
       voxel.bump_weights_(y, x) = weights_original(i, j);
+      voxel.last_seen_s_(y, x) = last_seen_original(i, j);
       changed(y, x) = 1;
     }
   }
 }
 
 void BIEVRMap::integratePoints(const std::vector<Eigen::Vector4d>& points, Voxel& voxel,
-                               Eigen::MatrixXi& changed) {
+                               Eigen::MatrixXi& changed, double time_s) {
   for (const auto& p : points) {
     Point p_O = voxel.T_C_W_.linear() * p.head(3) + voxel.T_C_W_.translation();
 
@@ -371,7 +380,24 @@ void BIEVRMap::integratePoints(const std::vector<Eigen::Vector4d>& points, Voxel
     double weight_new = config_.weighted ? std::min(0.5, 1. / p(3)) : 1.;
     voxel.bump_weights_(y, x) += weight_new;
     voxel.bump_img_(y, x) = (mean_old * weight + weight_new * p_O(2)) / voxel.bump_weights_(y, x);
+    voxel.last_seen_s_(y, x) = time_s;
     changed(y, x) = 1;
+  }
+}
+
+void BIEVRMap::decayStalePixels(Voxel& voxel, double time_s) {
+  if (config_.stale_timeout_s <= 0.0) return;
+
+  for (int y = 0; y < voxel.bump_weights_.rows(); ++y) {
+    for (int x = 0; x < voxel.bump_weights_.cols(); ++x) {
+      if (voxel.bump_weights_(y, x) <= 0.f) continue;
+      if (time_s - voxel.last_seen_s_(y, x) > config_.stale_timeout_s) {
+        // Erase it: the next hit here starts a fresh average instead of being diluted by
+        // however many old points already accumulated at this pixel.
+        voxel.bump_weights_(y, x) = 0.f;
+        voxel.bump_img_(y, x) = 0.f;
+      }
+    }
   }
 }
 

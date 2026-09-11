@@ -18,6 +18,10 @@ struct Voxel {
   Eigen::MatrixXf bump_img_;
   Eigen::MatrixXf bump_smoothed_;
   Eigen::MatrixXf bump_weights_;
+  // Timestamp (s) of the most recent hit each pixel received. Same shape as bump_img_, kept
+  // in lockstep with it (resized/carried over together in reprojectImage) so a pixel that
+  // stops getting confirmed can be told apart from one that never existed.
+  Eigen::MatrixXd last_seen_s_;
   M3 outer_sum_ = Eigen::Matrix3d::Zero();
   V3 sum_ = Eigen::Vector3d::Zero();
   size_t num_points_{0};
@@ -36,11 +40,17 @@ class BIEVRMap {
     bool weighted = false;      // use range weighted update for bump image
     bool smooth = false;        // apply gaussian smoothing to bump image
     double norm_tol_deg{3.0};   // if normal changes more than this, reproject bump image
+    // Seconds a pixel can go without a fresh hit before it is cleared the next time its
+    // voxel is touched. Lets terrain that has genuinely changed (e.g. fine sand reshaped by
+    // wheels) overwrite the old height instead of being averaged against it forever. <= 0
+    // disables decay entirely.
+    double stale_timeout_s{0.0};
   };
 
   explicit BIEVRMap(Config config);
 
-  bool integratePoints(const Pointcloud& input_cloud, const std::vector<double>* ranges = nullptr);
+  bool integratePoints(const Pointcloud& input_cloud, const std::vector<double>* ranges = nullptr,
+                       double time_s = 0.0);
 
   inline size_t hashIndex(const Point& point) const {
     Eigen::Vector3i voxel_idx = (point * inv_voxel_size_).array().floor().cast<int>();
@@ -86,14 +96,20 @@ class BIEVRMap {
   bool updateNormal(Voxel& voxel);
 
   bool updateBumpImage(const std::vector<Eigen::Vector4d>& points, Voxel& voxel,
-                       bool normal_change);
+                       bool normal_change, double time_s);
 
   ImageBounds computeImageSize(const Voxel& voxel, const Point& reference_point) const;
 
   void reprojectImage(Voxel& voxel, const ImageBounds& bounds, Eigen::MatrixXi& changed);
 
   void integratePoints(const std::vector<Eigen::Vector4d>& points, Voxel& voxel,
-                       Eigen::MatrixXi& changed);
+                       Eigen::MatrixXi& changed, double time_s);
+
+  // Clears (zeroes the weight of) any pixel in the voxel's bump image that has not been hit
+  // within config_.stale_timeout_s of time_s. Runs before this scan's points are integrated,
+  // so a pixel that is hit again this frame starts a fresh average instead of blending into
+  // a stale one. No-op when stale_timeout_s <= 0.
+  void decayStalePixels(Voxel& voxel, double time_s);
 
   void dilateMask(const Eigen::MatrixXi& changed, const Eigen::MatrixXf& weights,
                   Eigen::MatrixXi& changed_dilated);
