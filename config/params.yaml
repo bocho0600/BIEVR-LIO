@@ -104,6 +104,14 @@ publish:
   # true: also broadcast a static imu.frame -> lidar.frame transform from the calibration
   # extrinsic. Off by default: a robot description usually already publishes that edge.
   tf_lidar: false
+  # Diagonal-only covariance stamped onto the published odometry's pose and twist. Nothing
+  # here computes a real per-scan uncertainty, so leaving these at the message's default
+  # zero would tell a downstream consumer (most commonly a robot_localization EKF) that
+  # this measurement is exact -- which defeats both its blending against the filter's prior
+  # and any Mahalanobis gating it does. These are a placeholder, not a substitute for a real
+  # estimate; size them to whatever jitter you actually measure on /Odometry.
+  odom_position_variance: 0.0004    # m^2, x/y/z diagonal
+  odom_orientation_variance: 0.0003 # rad^2, roll/pitch/yaw diagonal
 
   # The accumulated map, published on <ns>/map as a PointCloud2. The map is stored as a
   # height image per voxel rather than as points, so this reprojects every observed pixel

@@ -69,6 +69,20 @@ class Pipeline {
          heading is a separate switch from the origin. ***/
     bool origin_at_base = false;
     bool heading_at_base = false;
+    /*** Diagonal-only covariance stamped onto the published odometry's pose and twist.
+         Nothing in this pipeline computes a real per-scan uncertainty, so the message was
+         otherwise left at its default zero -- which tells a downstream consumer (most
+         commonly a robot_localization EKF) that this measurement is exact. That is not a
+         cosmetic gap: a zero-covariance measurement is taken as absolute truth, so the
+         consumer's own blending and Mahalanobis gating are both defeated, and a single
+         noisy or degenerate registration is fused with full weight instead of being
+         smoothed against the filter's prior. These defaults are a placeholder sized to the
+         jitter observed on the Lunabotics sand arena bag (~15 mm RMS position, a fraction
+         of a degree RMS yaw, both as the second difference of position/yaw over a 10 Hz
+         scan) -- not a substitute for a real estimate, which would need to come out of the
+         registration itself (e.g. the Ceres solve's Hessian). ***/
+    double odom_position_variance = 4e-4;     // m^2, x/y/z diagonal
+    double odom_orientation_variance = 3e-4;  // rad^2, roll/pitch/yaw diagonal
     std::string log_path = "";
 
     size_t min_points_for_map_init = 100;

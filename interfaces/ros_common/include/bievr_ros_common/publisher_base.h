@@ -37,7 +37,11 @@ class PublisherBase {
   // under that namespace (e.g. ns="bievr_lio" turns "odometry" into
   // "/bievr_lio/odometry"). Absolute topics (leading '/') are left untouched.
   PublisherBase(Handle handle, std::shared_ptr<Pipeline> pipeline, const std::string& ns = "")
-      : backend_(std::move(handle)), ns_(ns), publish_tf_(pipeline->config().publish_tf) {
+      : backend_(std::move(handle)),
+        ns_(ns),
+        publish_tf_(pipeline->config().publish_tf),
+        odom_position_variance_(pipeline->config().odom_position_variance),
+        odom_orientation_variance_(pipeline->config().odom_orientation_variance) {
     registerTypes<Pointcloud, IntensityPointcloud, Odometry, V3>(pipeline);
   }
   virtual ~PublisherBase() = default;
@@ -80,6 +84,17 @@ class PublisherBase {
     // Twist is expressed in the child (body) frame.
     vecToMsg(odometry.linear_velocity, odom_msg.twist.twist.linear);
     vecToMsg(odometry.angular_velocity, odom_msg.twist.twist.angular);
+    // Diagonal only: see Pipeline::Config::odom_position_variance for why this is here at
+    // all. Row-major 6x6, so the diagonal is index i*6+i for i in [0,6) -- x, y, z, roll,
+    // pitch, yaw for pose; vx, vy, vz, vroll, vpitch, vyaw for twist.
+    for (int i = 0; i < 3; ++i) {
+      odom_msg.pose.covariance[i * 6 + i] = odom_position_variance_;
+      odom_msg.twist.covariance[i * 6 + i] = odom_position_variance_;
+    }
+    for (int i = 3; i < 6; ++i) {
+      odom_msg.pose.covariance[i * 6 + i] = odom_orientation_variance_;
+      odom_msg.twist.covariance[i * 6 + i] = odom_orientation_variance_;
+    }
     publishers_[topic].publish(odom_msg);
 
     /*** Mirror the pose as a TF transform, unless another node owns that edge. Two
@@ -145,6 +160,8 @@ class PublisherBase {
   Backend backend_;
   std::string ns_;
   bool publish_tf_ = true;
+  double odom_position_variance_ = 4e-4;
+  double odom_orientation_variance_ = 3e-4;
   std::unordered_map<std::string, typename Backend::TypedPublisher> publishers_;
 };
 
