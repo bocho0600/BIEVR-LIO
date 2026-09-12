@@ -198,6 +198,7 @@ inline void printConfigOverview(const Config& config) {
   os << "publish:\n";
   os << "  tf:                   " << yn(hc.publish_tf) << "\n";
   os << "  tf_lidar:             " << yn(hc.publish_tf_lidar) << "\n";
+  os << "  enable_odom_covariance:         " << yn(hc.enable_odom_covariance) << "\n";
   os << "  odom_position_variance:         " << hc.odom_position_variance << "\n";
   os << "  odom_orientation_variance:      " << hc.odom_orientation_variance << "\n";
   os << "  odom_linear_velocity_variance:  " << hc.odom_linear_velocity_variance << "\n";
@@ -333,6 +334,8 @@ inline bool loadConfigFromYaml(const std::vector<std::string>& yaml_paths, Confi
   }
   hc.publish_tf = yaml.get<bool>("publish", "tf", hc.publish_tf);
   hc.publish_tf_lidar = yaml.get<bool>("publish", "tf_lidar", hc.publish_tf_lidar);
+  hc.enable_odom_covariance =
+      yaml.get<bool>("publish", "enable_odom_covariance", hc.enable_odom_covariance);
   hc.odom_position_variance =
       yaml.get<double>("publish", "odom_position_variance", hc.odom_position_variance);
   hc.odom_orientation_variance =

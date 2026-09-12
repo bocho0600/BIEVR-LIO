@@ -104,16 +104,24 @@ publish:
   # true: also broadcast a static imu.frame -> lidar.frame transform from the calibration
   # extrinsic. Off by default: a robot description usually already publishes that edge.
   tf_lidar: false
-  # Diagonal-only covariance stamped onto the published odometry's pose and twist. Nothing
-  # here computes a real per-scan uncertainty, so leaving these at the message's default
-  # zero would tell a downstream consumer (most commonly a robot_localization EKF) that
-  # this measurement is exact -- which defeats both its blending against the filter's prior
-  # and any Mahalanobis gating it does. These are a placeholder, not a substitute for a real
-  # estimate; size them to whatever jitter you actually measure on /Odometry. Pose and twist
-  # are separate physical quantities (position vs. velocity) with separate units, so they
-  # get separate variances rather than sharing one number.
-  odom_position_variance: 0.0004         # m^2, x/y/z diagonal
-  odom_orientation_variance: 0.0003      # rad^2, roll/pitch/yaw diagonal
+  # Covariance stamped onto the published odometry's pose and twist. false leaves the message
+  # at its default zero, which tells a downstream consumer (most commonly a
+  # robot_localization EKF) that the measurement is exact -- defeating both its blending
+  # against the filter's prior and any Mahalanobis gating it does. true (the default) is
+  # correct almost always; the switch exists mainly so the whole feature can be A/B'd live
+  # (also a ROS param on the ROS2 wrapper, not just this file) rather than because zero
+  # covariance is ever a good choice.
+  enable_odom_covariance: true
+  # Pose gets a real per-scan estimate (LsqRegistration::poseCovarianceDiagonal, from the
+  # registration's own Gauss-Newton Hessian at its solution), so an ill-constrained direction
+  # is reported as uncertain instead of getting the same fixed number as a well-constrained
+  # one. These two are its fallback for when that estimate is not trustworthy this scan (too
+  # few effective points, or too ill-conditioned) -- size them to whatever jitter you actually
+  # measure on /Odometry.
+  odom_position_variance: 0.0004    # m^2, x/y/z diagonal fallback
+  odom_orientation_variance: 0.0003 # rad^2, roll/pitch/yaw diagonal fallback
+  # Twist has no per-scan estimate, so these are always used as-is. Distinct units from the
+  # pose pair above (velocity, not position), so reusing those would be dimensionally wrong.
   odom_linear_velocity_variance: 0.01    # (m/s)^2, vx/vy/vz diagonal
   odom_angular_velocity_variance: 0.0001 # (rad/s)^2, vroll/vpitch/vyaw diagonal
 

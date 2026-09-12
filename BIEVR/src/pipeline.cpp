@@ -165,8 +165,15 @@ void Pipeline::processFrame(const std::vector<ImuMeasurement>& imu_data,
   // Perform the actual registration
   timing::Timer align_timer("05_registration");
   LsqRegistration optimizer(*map_, source_filtered, config_.registration);
-  const Transform T_W_I = optimizer.computeTransformation(T_W_I_init);
+  const Transform T_W_I =
+      optimizer.computeTransformation(T_W_I_init, config_.enable_odom_covariance);
   const int n_effective_points = optimizer.numEffectivePoints();
+  if (config_.enable_odom_covariance) {
+    const auto pose_cov = optimizer.poseCovarianceDiagonal(T_W_I, config_.odom_position_variance,
+                                                           config_.odom_orientation_variance);
+    latest_pose_position_variance_ = pose_cov.position_variance;
+    latest_pose_orientation_variance_ = pose_cov.orientation_variance;
+  }
   align_timer.Stop();
 
   // Transform the full cloud using the estimated pose and add it to the map
@@ -511,6 +518,8 @@ void Pipeline::publishLatestState(const Header& header) {
   // comes straight from the latest gyro measurement (already in the body frame).
   odom.linear_velocity = latest_state.quat.conjugate() * latest_state.v;
   odom.angular_velocity = latest_gyro_;
+  odom.pose_position_variance = latest_pose_position_variance_;
+  odom.pose_orientation_variance = latest_pose_orientation_variance_;
 
   if (config_.odom_in_base) {
     /*** Publishing nothing while the extrinsic is unresolved is deliberate: the alternative
@@ -530,6 +539,20 @@ void Pipeline::publishLatestState(const Header& header) {
       odom.pose = Transform(Eigen::Isometry3d(odom.pose * T_I_B_));
       odom.linear_velocity = R_B_I * v_base_I;
       odom.angular_velocity = R_B_I * odom.angular_velocity;
+      /*** Position variance is unaffected to first order: T_I_B_ is a fixed calibration
+           (no randomness modelled), so translating by R_W_I * T_I_B_.translation() shifts
+           the world-frame position by a constant given the current orientation estimate,
+           which does not change its own covariance. Orientation variance does need
+           rotating, though -- pose_orientation_variance is a small-angle covariance in the
+           IMU's own local tangent space, and composing with T_I_B_'s (here on this robot,
+           45 degree) mounting rotation changes which physical axis "roll"/"pitch"/"yaw"
+           mean in that tangent space. Off-diagonal terms are still discarded (consistent
+           with everywhere else this is diagonal-only), so this is the same
+           rotate-then-take-the-diagonal approximation poseCovarianceDiagonal already makes
+           for position. ***/
+      const M3 orientation_cov_base =
+          R_B_I * odom.pose_orientation_variance.asDiagonal().toDenseMatrix() * R_B_I.transpose();
+      odom.pose_orientation_variance = orientation_cov_base.diagonal();
       publish(odom, header, "odom", config_.base_frame);
     }
   } else {

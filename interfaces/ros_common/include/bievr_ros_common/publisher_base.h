@@ -40,6 +40,7 @@ class PublisherBase {
       : backend_(std::move(handle)),
         ns_(ns),
         publish_tf_(pipeline->config().publish_tf),
+        odom_covariance_enabled_(pipeline->config().enable_odom_covariance),
         odom_position_variance_(pipeline->config().odom_position_variance),
         odom_orientation_variance_(pipeline->config().odom_orientation_variance),
         odom_linear_velocity_variance_(pipeline->config().odom_linear_velocity_variance),
@@ -52,6 +53,19 @@ class PublisherBase {
   bool publish(const T& data, const Header& header, const std::string& topic,
                const std::string& child_frame = "") {
     return publishImpl(data, header, topic, child_frame);
+  }
+
+  // Live update of the covariance knobs, so a ROS2 wrapper can expose them as ordinary ROS
+  // parameters (settable with `ros2 param set`, not just the Pipeline's own config file) and
+  // push changes here whenever they change, rather than only reading them once at
+  // construction. See bievr_lio_ros2/publisher.h's declareOdomCovarianceParams.
+  void setOdomCovarianceParams(bool enabled, double position_variance, double orientation_variance,
+                               double linear_velocity_variance, double angular_velocity_variance) {
+    odom_covariance_enabled_ = enabled;
+    odom_position_variance_ = position_variance;
+    odom_orientation_variance_ = orientation_variance;
+    odom_linear_velocity_variance_ = linear_velocity_variance;
+    odom_angular_velocity_variance_ = angular_velocity_variance;
   }
 
  private:
@@ -86,18 +100,33 @@ class PublisherBase {
     // Twist is expressed in the child (body) frame.
     vecToMsg(odometry.linear_velocity, odom_msg.twist.twist.linear);
     vecToMsg(odometry.angular_velocity, odom_msg.twist.twist.angular);
-    // Diagonal only: see Pipeline::Config::odom_position_variance for why this is here at
-    // all. Row-major 6x6, so the diagonal is index i*6+i for i in [0,6) -- x, y, z, roll,
-    // pitch, yaw for pose; vx, vy, vz, vroll, vpitch, vyaw for twist. Pose and twist get
-    // separate variances: they are different physical quantities (position vs. velocity),
-    // so the same number would be dimensionally wrong for both.
-    for (int i = 0; i < 3; ++i) {
-      odom_msg.pose.covariance[i * 6 + i] = odom_position_variance_;
-      odom_msg.twist.covariance[i * 6 + i] = odom_linear_velocity_variance_;
-    }
-    for (int i = 3; i < 6; ++i) {
-      odom_msg.pose.covariance[i * 6 + i] = odom_orientation_variance_;
-      odom_msg.twist.covariance[i * 6 + i] = odom_angular_velocity_variance_;
+    // Diagonal only: see Pipeline::Config::enable_odom_covariance for why this is here at
+    // all, and off entirely leaves the message at its default zero -- e.g. for A/B testing
+    // against that original (broken) behaviour without a rebuild. Row-major 6x6, so the
+    // diagonal is index i*6+i for i in [0,6) -- x, y, z, roll, pitch, yaw for pose; vx, vy,
+    // vz, vroll, vpitch, vyaw for twist. Pose and twist get separate variances: they are
+    // different physical quantities (position vs. velocity), so the same number would be
+    // dimensionally wrong for both.
+    //
+    // Pose position/orientation come from odometry.pose_*_variance when non-zero -- a real
+    // per-scan estimate from the registration itself, see
+    // LsqRegistration::poseCovarianceDiagonal -- and fall back to the configured constant
+    // otherwise (zero is that struct's sentinel for "no estimate this scan", never a value
+    // to publish literally). Twist has no such per-scan estimate, so it is always the
+    // configured constant.
+    if (odom_covariance_enabled_) {
+      for (int i = 0; i < 3; ++i) {
+        const double position_variance = odometry.pose_position_variance(i);
+        odom_msg.pose.covariance[i * 6 + i] =
+            position_variance > 0.0 ? position_variance : odom_position_variance_;
+        odom_msg.twist.covariance[i * 6 + i] = odom_linear_velocity_variance_;
+      }
+      for (int i = 3; i < 6; ++i) {
+        const double orientation_variance = odometry.pose_orientation_variance(i - 3);
+        odom_msg.pose.covariance[i * 6 + i] =
+            orientation_variance > 0.0 ? orientation_variance : odom_orientation_variance_;
+        odom_msg.twist.covariance[i * 6 + i] = odom_angular_velocity_variance_;
+      }
     }
     publishers_[topic].publish(odom_msg);
 
@@ -164,6 +193,7 @@ class PublisherBase {
   Backend backend_;
   std::string ns_;
   bool publish_tf_ = true;
+  bool odom_covariance_enabled_ = true;
   double odom_position_variance_ = 4e-4;
   double odom_orientation_variance_ = 3e-4;
   double odom_linear_velocity_variance_ = 1e-2;

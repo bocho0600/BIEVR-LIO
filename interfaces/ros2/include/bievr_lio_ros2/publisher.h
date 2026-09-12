@@ -7,11 +7,13 @@
 #include <geometry_msgs/msg/vector3_stamped.hpp>
 #include <memory>
 #include <nav_msgs/msg/odometry.hpp>
+#include <rcl_interfaces/msg/set_parameters_result.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <string>
 #include <typeindex>
 #include <typeinfo>
+#include <vector>
 
 // publisher_base.h holds the shared publish logic and transitively includes
 // bievr_ros_common/conversions.h (which pulls in the ROS message headers).
@@ -73,6 +75,49 @@ struct Ros2Backend {
 };
 
 using Publisher = PublisherBase<Ros2Backend>;
+
+/*** Declares the odometry-covariance knobs as ordinary ROS2 parameters on `node` -- settable
+     live with `ros2 param set`, not just Pipeline::Config's own custom YAML file -- and keeps
+     `pub` in sync with them. Seeded from `config` (the values the custom YAML file already
+     resolved), so the file remains the source of the startup default; declare_parameter's own
+     override mechanism (a launch file's `parameters=[...]`, or `--ros-args -p name:=value`)
+     still applies on top of that, exactly as for any other ROS parameter.
+
+     Call once, after both `node` and `pub` exist, and keep the returned handle alive for as
+     long as the node runs -- rclcpp holds it only by weak_ptr, specifically so the caller
+     controls the callback's lifetime by holding the shared_ptr; let the return value go out
+     of scope (or discard it) and the callback is silently removed; `ros2 param set` would
+     then keep reporting success while doing nothing.
+
+     Every later `ros2 param set` on any of these five re-reads all five and pushes them to
+     `pub` in one call; that is more work than strictly necessary per change, but the five
+     change together rarely enough (interactive tuning, not a hot path) that reading them all
+     back is simpler than tracking which one fired. ***/
+inline rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr
+declareOdomCovarianceParams(const rclcpp::Node::SharedPtr& node, const Pipeline::Config& config,
+                           const std::shared_ptr<Publisher>& pub) {
+  node->declare_parameter("enable_odom_covariance", config.enable_odom_covariance);
+  node->declare_parameter("odom_position_variance", config.odom_position_variance);
+  node->declare_parameter("odom_orientation_variance", config.odom_orientation_variance);
+  node->declare_parameter("odom_linear_velocity_variance", config.odom_linear_velocity_variance);
+  node->declare_parameter("odom_angular_velocity_variance",
+                          config.odom_angular_velocity_variance);
+
+  const auto apply = [node, pub]() {
+    pub->setOdomCovarianceParams(node->get_parameter("enable_odom_covariance").as_bool(),
+                                 node->get_parameter("odom_position_variance").as_double(),
+                                 node->get_parameter("odom_orientation_variance").as_double(),
+                                 node->get_parameter("odom_linear_velocity_variance").as_double(),
+                                 node->get_parameter("odom_angular_velocity_variance").as_double());
+  };
+  apply();  // seed from whatever declare_parameter resolved (the config default, or an override)
+  return node->add_on_set_parameters_callback([apply](const std::vector<rclcpp::Parameter>&) {
+    apply();
+    rcl_interfaces::msg::SetParametersResult result;
+    result.successful = true;
+    return result;
+  });
+}
 
 }  // namespace bievr
 #endif  // BIEVR_LIO_ROS2_PUBLISHER_H_

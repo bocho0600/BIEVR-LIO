@@ -190,12 +190,48 @@ class LsqRegistration {
                   const RegistrationConfig& config = RegistrationConfig());
   virtual ~LsqRegistration() = default;
 
-  Transform computeTransformation(const Transform& T_W_L_init);
+  // compute_covariance runs one extra full linearization (a second pass over every point,
+  // same cost as one LM iteration) at the converged pose so poseCovarianceDiagonal has
+  // something to work with; skip it (false) when the caller has no use for the covariance,
+  // to not pay that cost every scan for nothing.
+  Transform computeTransformation(const Transform& T_W_L_init, bool compute_covariance = true);
 
   // Number of source points that found a valid map correspondence in the last
   // linearization with Jacobians (i.e. the points that actually constrained the
   // pose). Reported on the dashboard as "Effective Points".
   int numEffectivePoints() const { return num_effective_points_; }
+
+  struct PoseCovariance {
+    V3 position_variance;     // m^2, x/y/z, world frame
+    V3 orientation_variance;  // rad^2, roll/pitch/yaw, local/body-frame tangent space
+  };
+
+  /*** Diagonal-only covariance estimate derived from the Gauss-Newton Hessian at the pose
+       computeTransformation just converged to (H, from a final linearization at that pose --
+       not the second-to-last LM iterate). Covariance = sigma^2 * H^-1, with sigma^2 the
+       residual variance implied by the Huber cost at the solution; H's own layout is
+       [rotation(3); translation(3)] in the local frame the LM step perturbs the pose in (see
+       stepLm: delta is composed as x0 * delta), so the translation block is rotated by
+       T_final's orientation into the world frame the pose message itself is expressed in,
+       while orientation is left in that local tangent space -- the usual convention for a
+       small-angle attitude covariance.
+
+       This is NOT a full uncertainty quantification: it reflects only this registration's
+       own residuals (a single photometric/geometric height term per point), not the
+       IMU-preintegration prior or the inertial-window optimisation that further refines the
+       state afterwards, and it is only as good as the local quadratic approximation LM makes
+       at the solution. It is honest about the one thing that matters most for a downstream
+       filter, though -- an ill-constrained direction (e.g. yaw and the horizontal plane on
+       a flat sand floor) shows up as large variance instead of the same fixed number as a
+       well-constrained one.
+
+       Falls back to (fallback_position_variance, fallback_orientation_variance) on every
+       axis together when there were too few effective points or H is too ill-conditioned to
+       trust -- both are plausible on a real registration (e.g. very early in a run, or a
+       genuinely degenerate scene) and a partially-fabricated per-axis estimate is worse than
+       an honest constant in that case. ***/
+  PoseCovariance poseCovarianceDiagonal(const Transform& T_final, double fallback_position_variance,
+                                       double fallback_orientation_variance) const;
 
  private:
   bool isConverged(const Transform& delta) const;
@@ -211,6 +247,12 @@ class LsqRegistration {
   std::vector<M3> skew_points_j_;
   bool converged_ = false;
   int num_effective_points_ = 0;
+  // Cached from one final linearize() call at the end of computeTransformation, so
+  // poseCovarianceDiagonal describes the actual returned pose rather than the LM loop's
+  // second-to-last iterate.
+  Matrix66 final_H_ = Matrix66::Zero();
+  double final_error_sum_ = 0.0;
+  int final_count_ = 0;
 };
 
 }  // namespace bievr

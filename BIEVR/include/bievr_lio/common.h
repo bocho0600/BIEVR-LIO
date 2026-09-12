@@ -155,6 +155,14 @@ struct Odometry {
   Transform pose;       // T_W_B (pose in the map/world frame)
   V3 linear_velocity;   // linear velocity expressed in the body frame
   V3 angular_velocity;  // angular velocity expressed in the body frame
+  // Diagonal-only per-scan pose covariance from LsqRegistration::poseCovarianceDiagonal:
+  // position (x, y, z) in the world frame pose is itself expressed in; orientation (roll,
+  // pitch, yaw) in the local/body-frame tangent space the registration perturbs it in. Zero
+  // (the default) is a sentinel for "no real estimate this scan" -- e.g. before the first
+  // registration runs -- which the ROS wrapper falls back to its own configured constant
+  // for, never publishes literally, since zero covariance is the bug this exists to avoid.
+  V3 pose_position_variance = V3::Zero();
+  V3 pose_orientation_variance = V3::Zero();
 };
 
 template <typename PointT>

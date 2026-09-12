@@ -3,6 +3,7 @@
 
 #include "bievr_lio/ls_optimizer.h"
 
+#include <Eigen/Eigenvalues>
 #include <tbb/enumerable_thread_specific.h>
 #include <tbb/parallel_reduce.h>
 
@@ -15,7 +16,8 @@ LsqRegistration::LsqRegistration(const BIEVRMap& map, const Pointcloud& source,
                                  const RegistrationConfig& config)
     : config_(config), map_(map), points_j_(source) {}
 
-Transform LsqRegistration::computeTransformation(const Transform& T_W_L_init) {
+Transform LsqRegistration::computeTransformation(const Transform& T_W_L_init,
+                                                 bool compute_covariance) {
   Transform x0 = T_W_L_init;
 
   skew_points_j_.resize(points_j_.size());
@@ -37,6 +39,17 @@ Transform LsqRegistration::computeTransformation(const Transform& T_W_L_init) {
       break;
     }
     converged_ = isConverged(delta);
+  }
+
+  // One more linearization at the pose actually being returned, so the cached Hessian
+  // describes it exactly rather than the LM loop's second-to-last iterate. Skipped
+  // (final_count_ left at 0, so poseCovarianceDiagonal just falls back) when the caller has
+  // no use for the covariance -- this is a full extra pass over every point, the same cost
+  // as one LM iteration, not worth paying for nothing.
+  if (compute_covariance) {
+    Vector6 unused_b;
+    final_error_sum_ = linearize(x0, &final_H_, &unused_b);
+    final_count_ = num_effective_points_;
   }
 
   return x0;
@@ -197,6 +210,58 @@ bool LsqRegistration::stepLm(Transform& x0, Transform& delta) {
   }
 
   return false;
+}
+
+LsqRegistration::PoseCovariance LsqRegistration::poseCovarianceDiagonal(
+    const Transform& T_final, double fallback_position_variance,
+    double fallback_orientation_variance) const {
+  const PoseCovariance fallback{V3::Constant(fallback_position_variance),
+                                V3::Constant(fallback_orientation_variance)};
+
+  // Too few correspondences for the quadratic approximation at the solution to mean much --
+  // early in a run, or a genuinely sparse scan.
+  constexpr int kMinEffectivePoints = 30;
+  if (final_count_ < kMinEffectivePoints) return fallback;
+
+  Eigen::SelfAdjointEigenSolver<Matrix66> eig(final_H_);
+  if (eig.info() != Eigen::Success) return fallback;
+  const double min_eig = eig.eigenvalues().minCoeff();
+  const double max_eig = eig.eigenvalues().maxCoeff();
+  // Degenerate geometry (e.g. yaw and the horizontal plane on a flat, feature-poor floor)
+  // makes H singular or near enough that inverting it is numerically meaningless rather than
+  // just large -- fall back instead of reporting something that looks precise but isn't.
+  constexpr double kMaxConditionNumber = 1e8;
+  if (min_eig <= 0.0 || max_eig / min_eig > kMaxConditionNumber) return fallback;
+
+  // Unbiased-ish residual variance: error_sum accumulates 0.5*r^2 for inliers (see
+  // Accumulator::add), so 2*error_sum/dof approximates the mean squared residual under the
+  // assumed noise model, with the usual degrees-of-freedom correction for the 6 estimated
+  // parameters.
+  const double dof = std::max(1, final_count_ - 6);
+  const double sigma2 = 2.0 * final_error_sum_ / dof;
+
+  const Matrix66 cov_local = sigma2 * final_H_.inverse();
+
+  // The translation block is in the same local frame stepLm perturbs the pose in (delta.
+  // translation() is rotated into world only when composed as x0 * delta), so it has to be
+  // rotated into the world frame the published pose itself is expressed in. Orientation is
+  // left as-is: a local/body-frame small-angle covariance, the usual convention.
+  const M3& R = T_final.linear();
+  const M3 position_cov_world = R * cov_local.block<3, 3>(3, 3) * R.transpose();
+
+  PoseCovariance out;
+  out.position_variance = position_cov_world.diagonal();
+  out.orientation_variance = cov_local.block<3, 3>(0, 0).diagonal();
+
+  for (int i = 0; i < 3; ++i) {
+    if (!std::isfinite(out.position_variance(i)) || out.position_variance(i) <= 0.0) {
+      out.position_variance(i) = fallback_position_variance;
+    }
+    if (!std::isfinite(out.orientation_variance(i)) || out.orientation_variance(i) <= 0.0) {
+      out.orientation_variance(i) = fallback_orientation_variance;
+    }
+  }
+  return out;
 }
 
 }  // namespace bievr

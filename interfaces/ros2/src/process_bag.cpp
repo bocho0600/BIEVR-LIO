@@ -54,6 +54,11 @@ int main(int argc, char** argv) {
   auto pipeline = std::make_shared<bievr::Pipeline>(config.pipeline_config);
   auto synchronizer = std::make_shared<bievr::Synchronizer>(pipeline);
   auto lio_pub = std::make_shared<bievr::Publisher>(node, pipeline, "bievr_lio");
+  // Held for the life of the process: rclcpp only keeps a weak_ptr to this, so letting it be
+  // discarded would silently remove the callback that lets `ros2 param set` actually reach
+  // the covariance knobs.
+  auto odom_covariance_param_cb =
+      bievr::declareOdomCovarianceParams(node, config.pipeline_config, lio_pub);
 
   /*** The base_frame switches need lidar_frame -> base_frame from a live TF tree, which
        nothing publishes during a bag replay. Say so rather than sitting silently at a

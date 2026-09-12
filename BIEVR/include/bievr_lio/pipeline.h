@@ -69,30 +69,44 @@ class Pipeline {
          heading is a separate switch from the origin. ***/
     bool origin_at_base = false;
     bool heading_at_base = false;
-    /*** Diagonal-only covariance stamped onto the published odometry's pose and twist.
-         Nothing in this pipeline computes a real per-scan uncertainty, so the message was
-         otherwise left at its default zero -- which tells a downstream consumer (most
-         commonly a robot_localization EKF) that this measurement is exact. That is not a
-         cosmetic gap: a zero-covariance measurement is taken as absolute truth, so the
-         consumer's own blending and Mahalanobis gating are both defeated, and a single
-         noisy or degenerate registration is fused with full weight instead of being
-         smoothed against the filter's prior. These are placeholders, not a substitute for a
-         real per-scan estimate (which would need to come out of the registration itself,
-         e.g. the Ceres solve's Hessian) -- sized to what was actually measured on the
-         Lunabotics sand arena bag:
-           - odom_position_variance / odom_orientation_variance: pose, from the second
-             difference of position/yaw over a 10 Hz scan (~15 mm RMS position, well under a
-             degree RMS yaw).
-           - odom_linear_velocity_variance / odom_angular_velocity_variance: twist. Distinct
-             units from the pose pair above (velocity, not position), so reusing those would
-             have been dimensionally wrong even before there was a real number to put here.
-             Sized from the frame-to-frame variation of the published linear velocity itself
-             (~0.16 m/s RMS) against a median driving speed of ~0.12 m/s on that bag -- i.e.
-             velocity here is only moderately informative, not exact. angular is a straight
-             gyro passthrough (see publishLatestState), so it is left near the sensor's own
-             noise floor rather than measured the same way. ***/
-    double odom_position_variance = 4e-4;             // m^2, x/y/z diagonal
-    double odom_orientation_variance = 3e-4;          // rad^2, roll/pitch/yaw diagonal
+    /*** Covariance stamped onto the published odometry's pose and twist. Leaving the message
+         at its default zero -- which is what happens if enable_odom_covariance is false --
+         tells a downstream consumer (most commonly a robot_localization EKF) that the
+         measurement is exact. That is not a cosmetic gap: a zero-covariance measurement is
+         taken as absolute truth, so the consumer's own blending and Mahalanobis gating are
+         both defeated, and a single noisy or degenerate registration is fused with full
+         weight instead of being smoothed against the filter's prior.
+         enable_odom_covariance defaults to true; it exists mainly so the whole feature can be
+         A/B'd live (a ROS param on the wrapper side, not a rebuild) rather than because zero
+         covariance is ever a good choice.
+           - Pose gets a real per-scan estimate: LsqRegistration::poseCovarianceDiagonal
+             derives it from the Gauss-Newton Hessian at the registration's own solution, so
+             an ill-constrained direction (e.g. yaw and the horizontal plane on a flat sand
+             floor) is reported as uncertain instead of getting the same fixed number as a
+             well-constrained one. odom_position_variance / odom_orientation_variance are its
+             fallback when that estimate is not trustworthy this scan (too few effective
+             points, or the Hessian too ill-conditioned) -- sized to what was actually
+             measured on the Lunabotics sand arena bag (the second difference of
+             position/yaw over a 10 Hz scan: ~15 mm RMS position, well under a degree RMS
+             yaw).
+           - Twist has no equivalent per-scan estimate (nothing here computes one for
+             velocity), so odom_linear_velocity_variance / odom_angular_velocity_variance are
+             plain constants, always used as-is. Distinct units from the pose pair above
+             (velocity, not position), so reusing those would have been dimensionally wrong
+             even before there was a real number to put here. Linear is sized from the
+             frame-to-frame variation of the published linear velocity itself (~0.16 m/s RMS
+             against a ~0.12 m/s median driving speed on that bag) -- i.e. velocity here is
+             only moderately informative, not exact. Angular is a straight gyro passthrough
+             (see publishLatestState), so it is left near the sensor's own noise floor
+             instead. Fusing this twist into the Lunabotics EKF was tried and made it
+             measurably noisier: the velocity is derived from the same short window of the
+             same registration as the pose in the same message, so its error correlates with
+             the pose error rather than being independent of it, and a diagonal-only
+             covariance assumes independence -- something to revisit only alongside a
+             covariance that captures that correlation, not a bigger constant. ***/
+    bool enable_odom_covariance = true;
+    double odom_position_variance = 4e-4;             // m^2, x/y/z diagonal fallback
+    double odom_orientation_variance = 3e-4;          // rad^2, roll/pitch/yaw diagonal fallback
     double odom_linear_velocity_variance = 1e-2;      // (m/s)^2, vx/vy/vz diagonal
     double odom_angular_velocity_variance = 1e-4;     // (rad/s)^2, vroll/vpitch/vyaw diagonal
     std::string log_path = "";
@@ -211,6 +225,11 @@ class Pipeline {
   bool lidar_extrinsic_valid_ = false;
   // Latest gyro reading, used to report the angular velocity in the odometry twist.
   V3 latest_gyro_ = V3::Zero();
+  // Latest registration's per-scan pose covariance (see LsqRegistration::poseCovarianceDiagonal),
+  // read by publishLatestState. Zero (the default, before any registration has run) is the
+  // "use the configured fallback" sentinel -- see Odometry::pose_position_variance.
+  V3 latest_pose_position_variance_ = V3::Zero();
+  V3 latest_pose_orientation_variance_ = V3::Zero();
   // Accelerometer scale resolved during bias estimation (1 if raw, g if the IMU
   // reports gravity-normalized accelerations). Applied to all incoming IMU data.
   double imu_acc_scale_ = 1.0;
