@@ -76,13 +76,25 @@ class Pipeline {
          cosmetic gap: a zero-covariance measurement is taken as absolute truth, so the
          consumer's own blending and Mahalanobis gating are both defeated, and a single
          noisy or degenerate registration is fused with full weight instead of being
-         smoothed against the filter's prior. These defaults are a placeholder sized to the
-         jitter observed on the Lunabotics sand arena bag (~15 mm RMS position, a fraction
-         of a degree RMS yaw, both as the second difference of position/yaw over a 10 Hz
-         scan) -- not a substitute for a real estimate, which would need to come out of the
-         registration itself (e.g. the Ceres solve's Hessian). ***/
-    double odom_position_variance = 4e-4;     // m^2, x/y/z diagonal
-    double odom_orientation_variance = 3e-4;  // rad^2, roll/pitch/yaw diagonal
+         smoothed against the filter's prior. These are placeholders, not a substitute for a
+         real per-scan estimate (which would need to come out of the registration itself,
+         e.g. the Ceres solve's Hessian) -- sized to what was actually measured on the
+         Lunabotics sand arena bag:
+           - odom_position_variance / odom_orientation_variance: pose, from the second
+             difference of position/yaw over a 10 Hz scan (~15 mm RMS position, well under a
+             degree RMS yaw).
+           - odom_linear_velocity_variance / odom_angular_velocity_variance: twist. Distinct
+             units from the pose pair above (velocity, not position), so reusing those would
+             have been dimensionally wrong even before there was a real number to put here.
+             Sized from the frame-to-frame variation of the published linear velocity itself
+             (~0.16 m/s RMS) against a median driving speed of ~0.12 m/s on that bag -- i.e.
+             velocity here is only moderately informative, not exact. angular is a straight
+             gyro passthrough (see publishLatestState), so it is left near the sensor's own
+             noise floor rather than measured the same way. ***/
+    double odom_position_variance = 4e-4;             // m^2, x/y/z diagonal
+    double odom_orientation_variance = 3e-4;          // rad^2, roll/pitch/yaw diagonal
+    double odom_linear_velocity_variance = 1e-2;      // (m/s)^2, vx/vy/vz diagonal
+    double odom_angular_velocity_variance = 1e-4;     // (rad/s)^2, vroll/vpitch/vyaw diagonal
     std::string log_path = "";
 
     size_t min_points_for_map_init = 100;

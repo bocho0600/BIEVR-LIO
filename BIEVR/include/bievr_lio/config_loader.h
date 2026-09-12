@@ -198,8 +198,10 @@ inline void printConfigOverview(const Config& config) {
   os << "publish:\n";
   os << "  tf:                   " << yn(hc.publish_tf) << "\n";
   os << "  tf_lidar:             " << yn(hc.publish_tf_lidar) << "\n";
-  os << "  odom_position_variance:    " << hc.odom_position_variance << "\n";
-  os << "  odom_orientation_variance: " << hc.odom_orientation_variance << "\n";
+  os << "  odom_position_variance:         " << hc.odom_position_variance << "\n";
+  os << "  odom_orientation_variance:      " << hc.odom_orientation_variance << "\n";
+  os << "  odom_linear_velocity_variance:  " << hc.odom_linear_velocity_variance << "\n";
+  os << "  odom_angular_velocity_variance: " << hc.odom_angular_velocity_variance << "\n";
   os << "  map_interval_s:       "
      << (hc.map_interval_s > 0. ? std::to_string(hc.map_interval_s) : std::string("off"))
      << "\n";
@@ -335,6 +337,10 @@ inline bool loadConfigFromYaml(const std::vector<std::string>& yaml_paths, Confi
       yaml.get<double>("publish", "odom_position_variance", hc.odom_position_variance);
   hc.odom_orientation_variance =
       yaml.get<double>("publish", "odom_orientation_variance", hc.odom_orientation_variance);
+  hc.odom_linear_velocity_variance = yaml.get<double>(
+      "publish", "odom_linear_velocity_variance", hc.odom_linear_velocity_variance);
+  hc.odom_angular_velocity_variance = yaml.get<double>(
+      "publish", "odom_angular_velocity_variance", hc.odom_angular_velocity_variance);
 
   // --- debug ---
   hc.publish_all_clouds = yaml.get<bool>("debug", "publish_all_clouds", false);

@@ -41,7 +41,9 @@ class PublisherBase {
         ns_(ns),
         publish_tf_(pipeline->config().publish_tf),
         odom_position_variance_(pipeline->config().odom_position_variance),
-        odom_orientation_variance_(pipeline->config().odom_orientation_variance) {
+        odom_orientation_variance_(pipeline->config().odom_orientation_variance),
+        odom_linear_velocity_variance_(pipeline->config().odom_linear_velocity_variance),
+        odom_angular_velocity_variance_(pipeline->config().odom_angular_velocity_variance) {
     registerTypes<Pointcloud, IntensityPointcloud, Odometry, V3>(pipeline);
   }
   virtual ~PublisherBase() = default;
@@ -86,14 +88,16 @@ class PublisherBase {
     vecToMsg(odometry.angular_velocity, odom_msg.twist.twist.angular);
     // Diagonal only: see Pipeline::Config::odom_position_variance for why this is here at
     // all. Row-major 6x6, so the diagonal is index i*6+i for i in [0,6) -- x, y, z, roll,
-    // pitch, yaw for pose; vx, vy, vz, vroll, vpitch, vyaw for twist.
+    // pitch, yaw for pose; vx, vy, vz, vroll, vpitch, vyaw for twist. Pose and twist get
+    // separate variances: they are different physical quantities (position vs. velocity),
+    // so the same number would be dimensionally wrong for both.
     for (int i = 0; i < 3; ++i) {
       odom_msg.pose.covariance[i * 6 + i] = odom_position_variance_;
-      odom_msg.twist.covariance[i * 6 + i] = odom_position_variance_;
+      odom_msg.twist.covariance[i * 6 + i] = odom_linear_velocity_variance_;
     }
     for (int i = 3; i < 6; ++i) {
       odom_msg.pose.covariance[i * 6 + i] = odom_orientation_variance_;
-      odom_msg.twist.covariance[i * 6 + i] = odom_orientation_variance_;
+      odom_msg.twist.covariance[i * 6 + i] = odom_angular_velocity_variance_;
     }
     publishers_[topic].publish(odom_msg);
 
@@ -162,6 +166,8 @@ class PublisherBase {
   bool publish_tf_ = true;
   double odom_position_variance_ = 4e-4;
   double odom_orientation_variance_ = 3e-4;
+  double odom_linear_velocity_variance_ = 1e-2;
+  double odom_angular_velocity_variance_ = 1e-4;
   std::unordered_map<std::string, typename Backend::TypedPublisher> publishers_;
 };
 
