@@ -8,7 +8,6 @@
 #include <memory>
 #include <nav_msgs/msg/odometry.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <thread>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <string>
 #include <typeindex>
@@ -111,10 +110,7 @@ declareOdomCovarianceParams(const rclcpp::Node::SharedPtr& node, const Pipeline:
                           config.odom_angular_velocity_variance);
 
   const auto apply = [node, pub]() {
-    const bool enabled = node->get_parameter("enable_odom_covariance").as_bool();
-    RCLCPP_INFO(node->get_logger(), "[covdiag] apply() thread=%zu enabled=%d",
-               std::hash<std::thread::id>{}(std::this_thread::get_id()), enabled);
-    pub->setOdomCovarianceParams(enabled,
+    pub->setOdomCovarianceParams(node->get_parameter("enable_odom_covariance").as_bool(),
                                  node->get_parameter("odom_position_variance").as_double(),
                                  node->get_parameter("odom_orientation_variance").as_double(),
                                  node->get_parameter("odom_linear_velocity_variance").as_double(),

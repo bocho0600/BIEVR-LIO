@@ -18,7 +18,6 @@
 #include <functional>
 #include <memory>
 #include <string>
-#include <thread>
 #include <typeinfo>
 #include <unordered_map>
 
@@ -115,8 +114,6 @@ class PublisherBase {
     // otherwise (zero is that struct's sentinel for "no estimate this scan", never a value
     // to publish literally). Twist has no such per-scan estimate, so it is always the
     // configured constant.
-    LOG(I, "[covdiag] publishImpl thread=" << std::hash<std::thread::id>{}(std::this_thread::get_id())
-                                          << " enabled=" << odom_covariance_enabled_);
     if (odom_covariance_enabled_) {
       for (int i = 0; i < 3; ++i) {
         const double position_variance = odometry.pose_position_variance(i);
