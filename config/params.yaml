@@ -6,6 +6,11 @@ map:
   weighted: True # Weighted pixel update
   max_size: 1500000 # Maximum number of voxels to keep in the map
   stale_timeout_s: 0 # Seconds a pixel can go unconfirmed before it is cleared. 0 disables decay.
+  # A stale pixel is only actually cleared if this scan's point count in the voxel is at
+  # least this fraction of the voxel's currently-observed pixel count -- guards against a
+  # long-range/grazing-angle look (naturally sparser than the look that built the surface)
+  # wrongly reading as the surface being gone. 0 disables this check specifically.
+  stale_min_relative_density: 0.5
   frame: "odom" # World-fixed parent frame of the published odometry and clouds
 
 preprocess:

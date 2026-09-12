@@ -40,11 +40,19 @@ class BIEVRMap {
     bool weighted = false;      // use range weighted update for bump image
     bool smooth = false;        // apply gaussian smoothing to bump image
     double norm_tol_deg{3.0};   // if normal changes more than this, reproject bump image
-    // Seconds a pixel can go without a fresh hit before it is cleared the next time its
-    // voxel is touched. Lets terrain that has genuinely changed (e.g. fine sand reshaped by
-    // wheels) overwrite the old height instead of being averaged against it forever. <= 0
-    // disables decay entirely.
+    // Seconds a pixel can go without a fresh hit before it is *eligible* to be cleared the
+    // next time its voxel is touched. Lets terrain that has genuinely changed (e.g. fine
+    // sand reshaped by wheels) overwrite the old height instead of being averaged against
+    // it forever. <= 0 disables decay entirely.
     double stale_timeout_s{0.0};
+    // A pixel that is stale by the rule above is only actually cleared if this scan's point
+    // count in the voxel is at least this fraction of the voxel's currently-observed pixel
+    // count. LiDAR point density is not uniform across the map -- the same physical spot
+    // gets far fewer points from long range or a grazing angle than it did when the surface
+    // was first built -- so a sparse look proves nothing about whether an unconfirmed pixel
+    // is actually gone, only that this particular scan did not resample it. Only a look at
+    // least as dense as whatever built the existing surface is trusted as evidence of that.
+    double stale_min_relative_density{0.5};
   };
 
   explicit BIEVRMap(Config config);
@@ -106,10 +114,12 @@ class BIEVRMap {
                        Eigen::MatrixXi& changed, double time_s);
 
   // Clears (zeroes the weight of) any pixel in the voxel's bump image that has not been hit
-  // within config_.stale_timeout_s of time_s. Runs before this scan's points are integrated,
-  // so a pixel that is hit again this frame starts a fresh average instead of blending into
-  // a stale one. No-op when stale_timeout_s <= 0.
-  void decayStalePixels(Voxel& voxel, double time_s);
+  // within config_.stale_timeout_s of time_s, but only if points_this_scan shows this
+  // update looked at the voxel densely enough (config_.stale_min_relative_density) to trust
+  // an absence as real rather than as an artefact of range/angle-dependent point spacing.
+  // Runs before this scan's points are integrated, so a pixel hit again this frame starts a
+  // fresh average instead of blending into a stale one. No-op when stale_timeout_s <= 0.
+  void decayStalePixels(Voxel& voxel, double time_s, size_t points_this_scan);
 
   void dilateMask(const Eigen::MatrixXi& changed, const Eigen::MatrixXf& weights,
                   Eigen::MatrixXi& changed_dilated);

@@ -218,7 +218,7 @@ bool BIEVRMap::updateBumpImage(const std::vector<Eigen::Vector4d>& points, Voxel
 
   // Drop pixels this voxel has not reconfirmed in a while before folding in this scan's
   // points, so a stale height is replaced rather than blended into.
-  decayStalePixels(voxel, time_s);
+  decayStalePixels(voxel, time_s, points.size());
 
   // Update the pixel values and weights based on the new points
   integratePoints(points, voxel, changed, time_s);
@@ -385,8 +385,18 @@ void BIEVRMap::integratePoints(const std::vector<Eigen::Vector4d>& points, Voxel
   }
 }
 
-void BIEVRMap::decayStalePixels(Voxel& voxel, double time_s) {
+void BIEVRMap::decayStalePixels(Voxel& voxel, double time_s, size_t points_this_scan) {
   if (config_.stale_timeout_s <= 0.0) return;
+
+  const double observed_count =
+      static_cast<double>((voxel.bump_weights_.array() > 0.f).count());
+  if (observed_count <= 0.0) return;
+  if (static_cast<double>(points_this_scan) < config_.stale_min_relative_density * observed_count) {
+    // This look was too sparse relative to what is already on record -- e.g. the same spot
+    // now seen from further away or at a shallower angle -- to trust a miss as the surface
+    // actually being gone. Wait for a denser pass instead of erasing on a thin sample.
+    return;
+  }
 
   for (int y = 0; y < voxel.bump_weights_.rows(); ++y) {
     for (int x = 0; x < voxel.bump_weights_.cols(); ++x) {
