@@ -7,8 +7,8 @@
 #include <geometry_msgs/msg/vector3_stamped.hpp>
 #include <memory>
 #include <nav_msgs/msg/odometry.hpp>
-#include <rcl_interfaces/msg/set_parameters_result.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <thread>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <string>
 #include <typeindex>
@@ -89,11 +89,18 @@ using Publisher = PublisherBase<Ros2Backend>;
      of scope (or discard it) and the callback is silently removed; `ros2 param set` would
      then keep reporting success while doing nothing.
 
+     Deliberately a *post*-set callback, not the more commonly reached-for on-set one: on-set
+     callbacks are a pre-commit validation hook, invoked with the pending value before it is
+     written into the node's parameter storage, so a node->get_parameter() call from inside
+     one still returns the *previous* value -- every apply() here would read one change
+     stale. Post-set fires after the value is committed, so get_parameter() returns what was
+     just set.
+
      Every later `ros2 param set` on any of these five re-reads all five and pushes them to
      `pub` in one call; that is more work than strictly necessary per change, but the five
      change together rarely enough (interactive tuning, not a hot path) that reading them all
      back is simpler than tracking which one fired. ***/
-inline rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr
+inline rclcpp::node_interfaces::PostSetParametersCallbackHandle::SharedPtr
 declareOdomCovarianceParams(const rclcpp::Node::SharedPtr& node, const Pipeline::Config& config,
                            const std::shared_ptr<Publisher>& pub) {
   node->declare_parameter("enable_odom_covariance", config.enable_odom_covariance);
@@ -104,19 +111,18 @@ declareOdomCovarianceParams(const rclcpp::Node::SharedPtr& node, const Pipeline:
                           config.odom_angular_velocity_variance);
 
   const auto apply = [node, pub]() {
-    pub->setOdomCovarianceParams(node->get_parameter("enable_odom_covariance").as_bool(),
+    const bool enabled = node->get_parameter("enable_odom_covariance").as_bool();
+    RCLCPP_INFO(node->get_logger(), "[covdiag] apply() thread=%zu enabled=%d",
+               std::hash<std::thread::id>{}(std::this_thread::get_id()), enabled);
+    pub->setOdomCovarianceParams(enabled,
                                  node->get_parameter("odom_position_variance").as_double(),
                                  node->get_parameter("odom_orientation_variance").as_double(),
                                  node->get_parameter("odom_linear_velocity_variance").as_double(),
                                  node->get_parameter("odom_angular_velocity_variance").as_double());
   };
   apply();  // seed from whatever declare_parameter resolved (the config default, or an override)
-  return node->add_on_set_parameters_callback([apply](const std::vector<rclcpp::Parameter>&) {
-    apply();
-    rcl_interfaces::msg::SetParametersResult result;
-    result.successful = true;
-    return result;
-  });
+  return node->add_post_set_parameters_callback(
+      [apply](const std::vector<rclcpp::Parameter>&) { apply(); });
 }
 
 }  // namespace bievr
