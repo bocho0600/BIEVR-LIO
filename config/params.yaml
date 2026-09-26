@@ -115,11 +115,13 @@ publish:
   # Pose gets a real per-scan estimate (LsqRegistration::poseCovarianceDiagonal, from the
   # registration's own Gauss-Newton Hessian at its solution), so an ill-constrained direction
   # is reported as uncertain instead of getting the same fixed number as a well-constrained
-  # one. These two are its fallback for when that estimate is not trustworthy this scan (too
-  # few effective points, or too ill-conditioned) -- size them to whatever jitter you actually
-  # measure on /Odometry.
-  odom_position_variance: 0.0004    # m^2, x/y/z diagonal fallback
-  odom_orientation_variance: 0.0003 # rad^2, roll/pitch/yaw diagonal fallback
+  # one. These two are a floor under that estimate, and its fallback for when it is not
+  # trustworthy this scan (too few effective points, or too ill-conditioned). A floor because
+  # the Hessian estimate is overconfident -- typically well below the scan-to-scan jitter
+  # actually on /Odometry, which makes a downstream EKF snap to every scan. Size them to the
+  # jitter you measure.
+  odom_position_variance: 0.0004     # m^2, x/y/z diagonal floor/fallback
+  odom_orientation_variance: 0.00003 # rad^2, roll/pitch/yaw diagonal floor/fallback
   # Twist has no per-scan estimate, so these are always used as-is. Distinct units from the
   # pose pair above (velocity, not position), so reusing those would be dimensionally wrong.
   odom_linear_velocity_variance: 0.01    # (m/s)^2, vx/vy/vz diagonal

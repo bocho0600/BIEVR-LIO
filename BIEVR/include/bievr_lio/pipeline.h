@@ -83,12 +83,16 @@ class Pipeline {
              derives it from the Gauss-Newton Hessian at the registration's own solution, so
              an ill-constrained direction (e.g. yaw and the horizontal plane on a flat sand
              floor) is reported as uncertain instead of getting the same fixed number as a
-             well-constrained one. odom_position_variance / odom_orientation_variance are its
-             fallback when that estimate is not trustworthy this scan (too few effective
-             points, or the Hessian too ill-conditioned) -- sized to what was actually
-             measured on the Lunabotics sand arena bag (the second difference of
-             position/yaw over a 10 Hz scan: ~15 mm RMS position, well under a degree RMS
-             yaw).
+             well-constrained one. odom_position_variance / odom_orientation_variance are
+             both its fallback when that estimate is not trustworthy this scan (too few
+             effective points, or the Hessian too ill-conditioned) and a floor under it when
+             it is (applied at publish time, PublisherBase::publishImpl). A floor because the
+             estimate is overconfident: on a Lunabotics sand bag it reported ~1e-5 m^2
+             against a pose that jitters ~15 mm RMS scan to scan, and an EKF fed that number
+             snaps to every scan instead of smoothing it. Sized to that measured jitter: the
+             second difference of position over a 10 Hz scan for position, and ~0.3 deg for
+             orientation (well under a degree RMS measured -- a 1 deg floor would hand
+             attitude to a downstream filter's gyro instead).
            - Twist has no equivalent per-scan estimate (nothing here computes one for
              velocity), so odom_linear_velocity_variance / odom_angular_velocity_variance are
              plain constants, always used as-is. Distinct units from the pose pair above
@@ -105,8 +109,8 @@ class Pipeline {
              covariance assumes independence -- something to revisit only alongside a
              covariance that captures that correlation, not a bigger constant. ***/
     bool enable_odom_covariance = true;
-    double odom_position_variance = 4e-4;             // m^2, x/y/z diagonal fallback
-    double odom_orientation_variance = 3e-4;          // rad^2, roll/pitch/yaw diagonal fallback
+    double odom_position_variance = 4e-4;             // m^2, x/y/z diagonal floor/fallback
+    double odom_orientation_variance = 3e-5;          // rad^2, roll/pitch/yaw diagonal floor/fallback
     double odom_linear_velocity_variance = 1e-2;      // (m/s)^2, vx/vy/vz diagonal
     double odom_angular_velocity_variance = 1e-4;     // (rad/s)^2, vroll/vpitch/vyaw diagonal
     std::string log_path = "";

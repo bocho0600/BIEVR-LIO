@@ -15,6 +15,7 @@
 // sensor_msgs/point_cloud2_iterator header (the wrappers' conversions.h, pulled
 // in by publisher.h, does this).
 
+#include <algorithm>
 #include <functional>
 #include <memory>
 #include <string>
@@ -108,23 +109,25 @@ class PublisherBase {
     // different physical quantities (position vs. velocity), so the same number would be
     // dimensionally wrong for both.
     //
-    // Pose position/orientation come from odometry.pose_*_variance when non-zero -- a real
-    // per-scan estimate from the registration itself, see
-    // LsqRegistration::poseCovarianceDiagonal -- and fall back to the configured constant
-    // otherwise (zero is that struct's sentinel for "no estimate this scan", never a value
-    // to publish literally). Twist has no such per-scan estimate, so it is always the
-    // configured constant.
+    // Pose position/orientation come from odometry.pose_*_variance -- a real per-scan
+    // estimate from the registration itself, see LsqRegistration::poseCovarianceDiagonal --
+    // floored at the configured constant. The floor also covers the no-estimate case (zero
+    // is that struct's sentinel for "no estimate this scan", never a value to publish
+    // literally). It is a floor rather than only a fallback because the Hessian estimate is
+    // overconfident: it reports ~1e-5 m^2 while the pose actually jitters several times that
+    // scan to scan, and an EKF fed that number snaps to every scan instead of smoothing it.
+    // Twist has no such per-scan estimate, so it is always the configured constant.
     if (odom_covariance_enabled_) {
       for (int i = 0; i < 3; ++i) {
         const double position_variance = odometry.pose_position_variance(i);
         odom_msg.pose.covariance[i * 6 + i] =
-            position_variance > 0.0 ? position_variance : odom_position_variance_;
+            std::max(position_variance, odom_position_variance_);
         odom_msg.twist.covariance[i * 6 + i] = odom_linear_velocity_variance_;
       }
       for (int i = 3; i < 6; ++i) {
         const double orientation_variance = odometry.pose_orientation_variance(i - 3);
         odom_msg.pose.covariance[i * 6 + i] =
-            orientation_variance > 0.0 ? orientation_variance : odom_orientation_variance_;
+            std::max(orientation_variance, odom_orientation_variance_);
         odom_msg.twist.covariance[i * 6 + i] = odom_angular_velocity_variance_;
       }
     }
@@ -195,7 +198,7 @@ class PublisherBase {
   bool publish_tf_ = true;
   bool odom_covariance_enabled_ = true;
   double odom_position_variance_ = 4e-4;
-  double odom_orientation_variance_ = 3e-4;
+  double odom_orientation_variance_ = 3e-5;
   double odom_linear_velocity_variance_ = 1e-2;
   double odom_angular_velocity_variance_ = 1e-4;
   std::unordered_map<std::string, typename Backend::TypedPublisher> publishers_;
